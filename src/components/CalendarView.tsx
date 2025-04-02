@@ -22,6 +22,9 @@ export default function CalendarView({ notes, onLogout }: CalendarViewProps) {
     noteDatesMap.set(formattedDate, note);
   });
   
+
+  console.log(noteDatesMap);
+
   const handleDateChange = (selectedDate: DateValue) => {
     setDate(selectedDate);
     const formattedDate = selectedDate.toString().split('T')[0];
