@@ -65,13 +65,9 @@ async function encryptFolder() {
         level: 9 // Maximum compression
       }
     });
-
-    console.log('compressedBase64', zipContent);
     
     // Encrypt the ZIP content (already in base64 format)
-    console.log('password', password);
     const encrypted = crypto.AES.encrypt(zipContent, password).toString();
-    console.log('encrypted', encrypted);
     
     // Save to data directory
     const outputPath = path.join(__dirname, '..', 'data', 'encrypted_notes.dat');

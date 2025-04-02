@@ -137,7 +137,7 @@ export default function NotePage({ encryptedData, date }: NotePageProps) {
         <header className="bg-white dark:bg-gray-800 shadow py-4">
           <div className="container mx-auto px-4 flex justify-between items-center">
             <h1 className="text-xl font-bold">Tägliche Liebesnotizen</h1>
-            <Button variant="ghost" onClick={handleBackToCalendar}>Zurück zum Kalender</Button>
+            <Button variant="ghost" onPress={handleBackToCalendar}>Zurück zum Kalender</Button>
           </div>
         </header>
         
@@ -166,8 +166,8 @@ export default function NotePage({ encryptedData, date }: NotePageProps) {
             
             <div className="flex justify-between mt-8">
               <Button 
-                onClick={handlePrevious}
-                disabled={notes.length <= 1}
+                onPress={handlePrevious}
+                isDisabled={notes.length <= 1}
               >
                 Vorherige
               </Button>
@@ -179,8 +179,8 @@ export default function NotePage({ encryptedData, date }: NotePageProps) {
                 )}
               </div>
               <Button 
-                onClick={handleNext}
-                disabled={notes.length <= 1}
+                onPress={handleNext}
+                isDisabled={notes.length <= 1}
               >
                 Nächste
               </Button>
