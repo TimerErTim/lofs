@@ -2,7 +2,7 @@ import { useState } from 'react';
 import { Input } from '@heroui/react';
 import { Button } from '@heroui/react';
 import { Card, CardHeader, CardBody, CardFooter } from '@heroui/react';
-import { storeHashedPassword, createAuthToken, storePassword } from '@/utils/auth';
+import { storePassword, createAuthToken } from '@/utils/auth';
 import { decryptNotes } from '@/utils/decryptNotes';
 
 interface LoginFormProps {
@@ -26,18 +26,17 @@ export default function LoginForm({ encryptedData, onLoginSuccess }: LoginFormPr
       
       if (notesData) {
         // Decryption successful, store auth data
-        storeHashedPassword(password);
         storePassword(password);
         createAuthToken();
         
         // Notify parent with the password for decryption
         onLoginSuccess(password);
       } else {
-        setError('Invalid password. Please try again.');
+        setError('Ungültiges Passwort. Bitte versuchen Sie es erneut.');
       }
     } catch (error) {
       console.error('Decryption error:', error);
-      setError('Unable to decrypt data. Please try again.');
+      setError('Entschlüsselung fehlgeschlagen. Bitte versuchen Sie es erneut.');
     } finally {
       setIsLoading(false);
     }
@@ -47,9 +46,9 @@ export default function LoginForm({ encryptedData, onLoginSuccess }: LoginFormPr
     <div className="flex items-center justify-center min-h-screen bg-gray-100 dark:bg-gray-900 p-4">
       <Card className="max-w-md w-full">
         <CardHeader className="pb-0">
-          <h2 className="text-2xl font-bold text-center">Daily Notes of Love</h2>
+          <h2 className="text-2xl font-bold text-center">Tägliche Liebesnotizen</h2>
           <p className="text-center text-gray-500 dark:text-gray-400 mt-1">
-            Enter the password to view your love notes
+            Geben Sie das Passwort ein, um Ihre Liebesnotizen anzuzeigen
           </p>
         </CardHeader>
         <CardBody>
@@ -58,8 +57,8 @@ export default function LoginForm({ encryptedData, onLoginSuccess }: LoginFormPr
               <div>
                 <Input
                   type="password"
-                  label="Password"
-                  placeholder="Enter your password"
+                  label="Passwort"
+                  placeholder="Passwort eingeben"
                   value={password}
                   onChange={(e) => setPassword(e.target.value)}
                   isDisabled={isLoading}
@@ -75,14 +74,14 @@ export default function LoginForm({ encryptedData, onLoginSuccess }: LoginFormPr
                 isLoading={isLoading}
                 className="w-full"
               >
-                Login
+                Anmelden
               </Button>
             </div>
           </form>
         </CardBody>
         <CardFooter className="pt-0">
           <p className="text-center text-xs text-gray-500 dark:text-gray-400">
-            This site contains private content. Unauthorized access is prohibited.
+            Diese Seite enthält private Inhalte. Unbefugter Zugriff ist untersagt.
           </p>
         </CardFooter>
       </Card>
