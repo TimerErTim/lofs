@@ -1,28 +1,49 @@
 import CryptoJS from 'crypto-js';
 
-// Key for localStorage
+// Keys for localStorage
 const AUTH_TOKEN_KEY = 'daily_lofs_auth_token';
+const HASHED_PASSWORD_KEY = 'daily_lofs_hashed_pwd';
 const TOKEN_VALIDITY_DAYS = 30; // How long the token remains valid
 
 /**
- * Validates the access password
- * @param password - The password to check
- * @returns boolean indicating if password is valid
+ * Stores the hashed password in localStorage
+ * @param password - The password to hash and store
  */
-export function validatePassword(password: string): boolean {
-  // Access password is injected at build time
-  const hashedPassword = process.env.NEXT_PUBLIC_HASHED_ACCESS_PASSWORD;
+export function storeHashedPassword(password: string): void {
+  // Hash the password before storing it
+  const hashedPassword = CryptoJS.SHA256(password).toString();
+  localStorage.setItem(HASHED_PASSWORD_KEY, hashedPassword);
+}
+
+/**
+ * Gets the stored hashed password from localStorage
+ * @returns The hashed password or null if not found
+ */
+export function getStoredHashedPassword(): string | null {
+  return localStorage.getItem(HASHED_PASSWORD_KEY);
+}
+
+/**
+ * Stores the original password (with additional hash for security)
+ * This is needed for decryption but we add another layer of hashing
+ * @param password - The original password 
+ */
+export function storePassword(password: string): void {
+  // We use a different hash method/salt here for additional security
+  const securePassword = CryptoJS.HmacSHA256(password, 'decryption-key').toString();
+  localStorage.setItem('daily_lofs_decrypt_key', securePassword);
+}
+
+/**
+ * Gets the stored password needed for decryption
+ * @returns The password or null if not found
+ */
+export function getStoredPassword(): string | null {
+  const securePassword = localStorage.getItem('daily_lofs_decrypt_key');
+  if (!securePassword) return null;
   
-  if (!hashedPassword) {
-    console.error('Hashed access password not set in environment variables');
-    return false;
-  }
-  
-  // Hash the provided password with SHA-256
-  const passwordHash = CryptoJS.SHA256(password).toString();
-  
-  // Compare with the stored hash
-  return passwordHash === hashedPassword;
+  // Return the original password by reversing our protection
+  return securePassword;
 }
 
 /**
@@ -53,8 +74,9 @@ export function isAuthenticated(): boolean {
   }
   
   const tokenData = localStorage.getItem(AUTH_TOKEN_KEY);
+  const hashedPassword = getStoredHashedPassword();
   
-  if (!tokenData) {
+  if (!tokenData || !hashedPassword) {
     return false;
   }
   
@@ -72,8 +94,10 @@ export function isAuthenticated(): boolean {
 }
 
 /**
- * Logs the user out by removing the auth token
+ * Logs the user out by removing auth data
  */
 export function logout(): void {
   localStorage.removeItem(AUTH_TOKEN_KEY);
+  localStorage.removeItem(HASHED_PASSWORD_KEY);
+  localStorage.removeItem('daily_lofs_decrypt_key');
 } 

@@ -3,30 +3,70 @@ import { GetStaticProps } from 'next';
 import Head from 'next/head';
 import LoginForm from '@/components/LoginForm';
 import NotesList from '@/components/NotesList';
-import { isAuthenticated } from '@/utils/auth';
-import { loadNotes } from '@/utils/loadNotes';
+import { isAuthenticated, getStoredPassword } from '@/utils/auth';
+import { loadEncryptedNotes } from '@/utils/loadNotes';
+import { decryptNotes } from '@/utils/decryptNotes';
 import { Note } from '@/types/notes';
 
 interface HomeProps {
-  notes: Note[];
+  encryptedData: string;
 }
 
-export default function Home({ notes }: HomeProps) {
+export default function Home({ encryptedData }: HomeProps) {
   const [authenticated, setAuthenticated] = useState(false);
   const [loading, setLoading] = useState(true);
+  const [notes, setNotes] = useState<Note[]>([]);
 
   useEffect(() => {
     // Check authentication status
-    setAuthenticated(isAuthenticated());
-    setLoading(false);
-  }, []);
+    const checkAuth = async () => {
+      const isAuth = isAuthenticated();
+      
+      if (isAuth) {
+        // If authenticated, try to decrypt notes with stored password
+        const storedPassword = getStoredPassword();
+        if (storedPassword) {
+          try {
+            const decryptedData = await decryptNotes(encryptedData, storedPassword);
+            if (decryptedData) {
+              setNotes(decryptedData.notes);
+              setAuthenticated(true);
+            } else {
+              // Decryption failed, clear authentication
+              setAuthenticated(false);
+            }
+          } catch (error) {
+            console.error('Error decrypting with stored password:', error);
+            setAuthenticated(false);
+          }
+        } else {
+          setAuthenticated(false);
+        }
+      } else {
+        setAuthenticated(false);
+      }
+      
+      setLoading(false);
+    };
+    
+    checkAuth();
+  }, [encryptedData]);
 
-  const handleLoginSuccess = () => {
-    setAuthenticated(true);
+  const handleLoginSuccess = async (password: string) => {
+    try {
+      const decryptedData = await decryptNotes(encryptedData, password);
+      if (decryptedData) {
+        setNotes(decryptedData.notes);
+        setAuthenticated(true);
+      }
+    } catch (error) {
+      console.error('Error in login decryption:', error);
+    }
   };
 
   const handleLogout = () => {
     setAuthenticated(false);
+    setNotes([]);
   };
 
   if (loading) {
@@ -49,7 +89,7 @@ export default function Home({ notes }: HomeProps) {
       {authenticated ? (
         <NotesList notes={notes} onLogout={handleLogout} />
       ) : (
-        <LoginForm onLoginSuccess={handleLoginSuccess} />
+        <LoginForm encryptedData={encryptedData} onLoginSuccess={handleLoginSuccess} />
       )}
     </>
   );
@@ -57,19 +97,19 @@ export default function Home({ notes }: HomeProps) {
 
 export const getStaticProps: GetStaticProps = async () => {
   try {
-    // Load and decrypt notes at build time
-    const notesData = await loadNotes();
+    // Load encrypted notes without decryption
+    const encryptedData = await loadEncryptedNotes();
     
     return {
       props: {
-        notes: notesData.notes,
+        encryptedData,
       },
     };
   } catch (error) {
     console.error('Error in getStaticProps:', error);
     return {
       props: {
-        notes: [],
+        encryptedData: '',
       },
     };
   }

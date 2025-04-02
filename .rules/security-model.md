@@ -21,7 +21,7 @@ These security rules apply to all code, configuration, deployment processes, and
 2. **Image Security**
    - Images must be included in the encrypted ZIP archive
    - No unencrypted images should be stored in the repository
-   - Images are extracted and converted to data URLs at build time
+   - Images are extracted and converted to data URLs during client-side decryption
 
 ### Authentication
 
@@ -29,69 +29,78 @@ These security rules apply to all code, configuration, deployment processes, and
    - The website access password must never be stored in plain text
    - Only SHA-256 hashes of passwords should be used for verification
    - Password hashing occurs client-side using CryptoJS
-   - The hashed password is injected at build time via environment variables
+   - Password validation happens through successful decryption of the notes
 
 2. **Session Management**
    - Authentication tokens are stored in localStorage
    - Tokens include creation and expiry timestamps
    - Default validity period is 30 days
-   - No sensitive information should be stored in the token
+   - Hashed password is stored in localStorage for session duration
+   - Original password is stored securely with additional hashing for decryption
 
-### Environment Variables
+### Client-Side Security
 
-1. **Required Secrets**
-   - `NOTES_DECRYPTION_PASSWORD`: Used to decrypt notes at build time
-   - `NEXT_PUBLIC_HASHED_ACCESS_PASSWORD`: SHA-256 hash of the website access password
+1. **Decryption Process**
+   - Decryption occurs exclusively in the client browser
+   - Decryption password is never sent to any server
+   - The website doesn't need any server-side knowledge of the password
 
-2. **Secret Management**
-   - For local development, use `.env.local` (excluded from git)
-   - For production, use GitHub Secrets
-   - Never log or expose secrets in any way
+2. **Password Storage**
+   - Passwords in localStorage use proper hashing
+   - Clear all password data on logout
+   - Never expose decryption methods to external scripts
 
 ### Build-time vs. Runtime Security
 
 1. **Build-time Operations**
-   - Note decryption happens only at build time
-   - Access to decryption keys is restricted to build time
-   - Images are embedded as data URLs during build
+   - No decryption occurs during build
+   - No secrets are needed during build
+   - Encrypted data is passed directly to the client
 
 2. **Runtime Operations**
-   - No decryption keys are available at runtime
-   - Authentication uses only the pre-built hash for comparison
-   - All sensitive operations must complete during build
+   - All decryption happens in the client browser
+   - Authentication uses client-side validation
+   - Notes and images are decrypted and displayed only after successful authentication
 
 ## Examples
 
-### Correct Environment Variable Usage
+### Correct Password Handling
 
-```javascript
-// Correct: Accessing build-time secret
-const password = process.env.NOTES_DECRYPTION_PASSWORD;
-if (!password) {
-  throw new Error('NOTES_DECRYPTION_PASSWORD environment variable is not set');
+```typescript
+// Correct: Store hashed password in localStorage
+export function storeHashedPassword(password: string): void {
+  const hashedPassword = CryptoJS.SHA256(password).toString();
+  localStorage.setItem('hashed_password_key', hashedPassword);
 }
 
-// Correct: Using public environment variable for client-side code
-const hashedPassword = process.env.NEXT_PUBLIC_HASHED_ACCESS_PASSWORD;
+// Correct: Client-side decryption
+const decryptedData = await decryptNotes(encryptedData, password);
+if (decryptedData) {
+  // Authentication successful
+  setNotes(decryptedData.notes);
+}
 ```
 
 ### Incorrect Security Practices (AVOID)
 
 ```javascript
-// WRONG: Hardcoding secrets
-const decryptionPassword = "myHardcodedPassword";
+// WRONG: Sending password to server
+fetch('/api/validate-password', {
+  method: 'POST',
+  body: JSON.stringify({ password })
+});
 
-// WRONG: Storing unencrypted sensitive data
-fs.writeFileSync('data/notes.json', JSON.stringify(notesData));
+// WRONG: Storing unencrypted password
+localStorage.setItem('user_password', password);
 
-// WRONG: Exposing decryption functionality to client
-export function decryptNotesClientSide(password) {
-  // This would expose the decryption capability to the browser
+// WRONG: Decrypting notes at build time
+export async function decryptNotesAtBuild(encryptedData) {
+  // This would expose decrypted content at build time
 }
 ```
 
 ## References
 
 - [CryptoJS Documentation](https://cryptojs.gitbook.io/docs/)
-- [Next.js Environment Variables](https://nextjs.org/docs/basic-features/environment-variables)
-- [GitHub Secrets Documentation](https://docs.github.com/en/actions/security-guides/encrypted-secrets) 
+- [Web Storage Security](https://developer.mozilla.org/en-US/docs/Web/API/Web_Storage_API/Using_the_Web_Storage_API#security)
+- [Client-Side Security Best Practices](https://cheatsheetseries.owasp.org/cheatsheets/DOM_based_XSS_Prevention_Cheat_Sheet.html) 
