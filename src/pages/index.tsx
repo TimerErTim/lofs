@@ -2,7 +2,7 @@ import { useState, useEffect } from 'react';
 import { GetStaticProps } from 'next';
 import Head from 'next/head';
 import LoginForm from '@/components/LoginForm';
-import NotesList from '@/components/NotesList';
+import CalendarView from '@/components/CalendarView';
 import { isAuthenticated, getStoredPassword } from '@/utils/auth';
 import { loadEncryptedNotes } from '@/utils/loadNotes';
 import { decryptNotes } from '@/utils/decryptNotes';
@@ -87,7 +87,7 @@ export default function Home({ encryptedData }: HomeProps) {
       </Head>
 
       {authenticated ? (
-        <NotesList notes={notes} onLogout={handleLogout} />
+        <CalendarView notes={notes} onLogout={handleLogout} />
       ) : (
         <LoginForm encryptedData={encryptedData} onLoginSuccess={handleLoginSuccess} />
       )}
