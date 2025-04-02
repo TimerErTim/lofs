@@ -72,7 +72,7 @@ export default function Home({ encryptedData }: HomeProps) {
   if (loading) {
     return (
       <div className="flex items-center justify-center min-h-screen bg-gray-100 dark:bg-gray-900">
-        <p>Loading...</p>
+        <p>Wird geladen...</p>
       </div>
     );
   }
@@ -80,8 +80,8 @@ export default function Home({ encryptedData }: HomeProps) {
   return (
     <>
       <Head>
-        <title>Daily Notes of Love</title>
-        <meta name="description" content="Private daily notes of love" />
+        <title>Tägliche Liebesnotizen</title>
+        <meta name="description" content="Private Liebesnotizen" />
         <meta name="viewport" content="width=device-width, initial-scale=1" />
         <link rel="icon" href="/favicon.ico" />
       </Head>

@@ -3,19 +3,21 @@ import { useRouter } from 'next/router';
 import Head from 'next/head';
 import { GetStaticProps, GetStaticPaths } from 'next';
 import { Button, Card, CardHeader, CardBody, CardFooter } from '@heroui/react';
-import { format, parseISO, isValid } from 'date-fns';
+import { format } from 'date-fns';
+import { de } from 'date-fns/locale';
 import { loadEncryptedNotes } from '@/utils/loadNotes';
 import { decryptNotes } from '@/utils/decryptNotes';
+import { decryptNotesAtBuildTime } from '@/utils/serverDecrypt';
 import { isAuthenticated, getStoredPassword } from '@/utils/auth';
 import { Note } from '@/types/notes';
 
 interface NotePageProps {
   encryptedData: string;
+  date: string;
 }
 
-export default function NotePage({ encryptedData }: NotePageProps) {
+export default function NotePage({ encryptedData, date }: NotePageProps) {
   const router = useRouter();
-  const { date } = router.query;
   
   const [authenticated, setAuthenticated] = useState(false);
   const [loading, setLoading] = useState(true);
@@ -38,7 +40,7 @@ export default function NotePage({ encryptedData }: NotePageProps) {
               setAuthenticated(true);
               
               // Find the note by date
-              if (date && typeof date === 'string') {
+              if (date) {
                 const foundNoteIndex = decryptedData.notes.findIndex(note => {
                   const noteDate = format(new Date(note.date), 'yyyy-MM-dd');
                   return noteDate === date;
@@ -101,7 +103,7 @@ export default function NotePage({ encryptedData }: NotePageProps) {
   if (loading) {
     return (
       <div className="flex items-center justify-center min-h-screen bg-gray-100 dark:bg-gray-900">
-        <p>Loading...</p>
+        <p>Wird geladen...</p>
       </div>
     );
   }
@@ -119,14 +121,14 @@ export default function NotePage({ encryptedData }: NotePageProps) {
       month: 'long', 
       day: 'numeric' 
     };
-    return date.toLocaleDateString(undefined, options);
+    return date.toLocaleDateString('de-DE', options);
   };
   
   return (
     <>
       <Head>
-        <title>Note - {formatDate(currentNote.date)} | Daily Notes of Love</title>
-        <meta name="description" content="Private daily notes of love" />
+        <title>Notiz - {formatDate(currentNote.date)} | Tägliche Liebesnotizen</title>
+        <meta name="description" content="Private Liebesnotizen" />
         <meta name="viewport" content="width=device-width, initial-scale=1" />
         <link rel="icon" href="/favicon.ico" />
       </Head>
@@ -134,8 +136,8 @@ export default function NotePage({ encryptedData }: NotePageProps) {
       <div className="flex flex-col min-h-screen bg-gray-100 dark:bg-gray-900">
         <header className="bg-white dark:bg-gray-800 shadow py-4">
           <div className="container mx-auto px-4 flex justify-between items-center">
-            <h1 className="text-xl font-bold">Daily Notes of Love</h1>
-            <Button variant="ghost" onClick={handleBackToCalendar}>Back to Calendar</Button>
+            <h1 className="text-xl font-bold">Tägliche Liebesnotizen</h1>
+            <Button variant="ghost" onClick={handleBackToCalendar}>Zurück zum Kalender</Button>
           </div>
         </header>
         
@@ -150,7 +152,7 @@ export default function NotePage({ encryptedData }: NotePageProps) {
                   <div className="mb-4">
                     <img 
                       src={currentNote.imageUrl} 
-                      alt="Note image" 
+                      alt="Notiz Bild" 
                       className="w-full h-auto rounded-lg object-cover max-h-[400px]"
                     />
                   </div>
@@ -158,7 +160,7 @@ export default function NotePage({ encryptedData }: NotePageProps) {
                 <p className="whitespace-pre-line">{currentNote.text}</p>
               </CardBody>
               <CardFooter className="pt-0">
-                <p className="text-xs text-gray-500 dark:text-gray-400">Note #{currentNote.id}</p>
+                <p className="text-xs text-gray-500 dark:text-gray-400">Notiz #{currentNote.id}</p>
               </CardFooter>
             </Card>
             
@@ -167,12 +169,12 @@ export default function NotePage({ encryptedData }: NotePageProps) {
                 onClick={handlePrevious}
                 disabled={notes.length <= 1}
               >
-                Previous
+                Vorherige
               </Button>
               <div className="text-center">
                 {notes.length > 1 && (
                   <span className="text-sm text-gray-500 dark:text-gray-400">
-                    {currentIndex + 1} of {notes.length}
+                    {currentIndex + 1} von {notes.length}
                   </span>
                 )}
               </div>
@@ -180,7 +182,7 @@ export default function NotePage({ encryptedData }: NotePageProps) {
                 onClick={handleNext}
                 disabled={notes.length <= 1}
               >
-                Next
+                Nächste
               </Button>
             </div>
           </div>
@@ -189,7 +191,7 @@ export default function NotePage({ encryptedData }: NotePageProps) {
         <footer className="bg-white dark:bg-gray-800 py-4 shadow-inner">
           <div className="container mx-auto px-4 text-center">
             <p className="text-sm text-gray-500 dark:text-gray-400">
-              With love, every day.
+              Mit Liebe, jeden Tag.
             </p>
           </div>
         </footer>
@@ -199,31 +201,49 @@ export default function NotePage({ encryptedData }: NotePageProps) {
 }
 
 export const getStaticPaths: GetStaticPaths = async () => {
-  // This function gets called at build time to determine which pages to pre-generate
-  // We return an empty array for paths since the note dates are encrypted and not known at build time
-  // Next.js will generate these pages on-demand
+  // Generate all known paths at build time using the server-side decryption utility
+  const noteDates = await decryptNotesAtBuildTime();
+  
+  if (noteDates.length === 0) {
+    console.warn('No note dates could be generated at build time - check NOTES_DECRYPTION_PASSWORD');
+    // Return empty paths - this will cause build warnings, but it's better than a build failure
+    return {
+      paths: [],
+      fallback: false, // Return 404 for unknown paths
+    };
+  }
+  
+  // Create the paths array for all note dates
+  const paths = noteDates.map(noteDate => ({
+    params: { date: noteDate }
+  }));
+  
   return {
-    paths: [],
-    fallback: 'blocking', // Generate pages on-demand
+    paths,
+    fallback: false, // Return 404 for any paths not generated at build time
   };
 };
 
-export const getStaticProps: GetStaticProps = async () => {
+export const getStaticProps: GetStaticProps = async ({ params }) => {
   try {
+    // Extract the date parameter
+    const date = params?.date as string;
+    
+    if (!date) {
+      return { notFound: true };
+    }
+    
     // Load encrypted notes without decryption
     const encryptedData = await loadEncryptedNotes();
     
     return {
       props: {
         encryptedData,
+        date,
       },
     };
   } catch (error) {
     console.error('Error in getStaticProps:', error);
-    return {
-      props: {
-        encryptedData: '',
-      },
-    };
+    return { notFound: true };
   }
 }; 
