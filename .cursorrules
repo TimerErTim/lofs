@@ -36,18 +36,18 @@ This project is a static Next.js website for sharing private "daily love notes" 
 2. **Data Flow**:
    - Notes stored in an encrypted zip file in the repository
    - Zip contains both text notes and images
-   - Decryption occurs at build time using environment variables
+   - Encrypted data is passed to the client and decrypted in the browser
    - Local script encrypts notes and pushes to GitHub
 
 3. **Security Model**:
    - Notes are encrypted at rest in the repository
-   - Password-based decryption during build process
+   - Password-based decryption occurs entirely client-side
    - Client-side authentication using localStorage
-   - Passwords stored as hashes (SHA-256)
+   - Passwords stored as hashes in localStorage
 
 4. **Deployment Process**:
    - GitHub Actions workflow builds and deploys to GitHub Pages
-   - Environment secrets injected at build time
+   - No secrets needed during build process
    - Static site export for hosting without server-side code
 
-AI agents should preserve this architecture and security model when making changes or suggestions to the codebase. Special attention should be paid to maintaining the separation between encrypted storage and decryption at build time. 
+AI agents should preserve this architecture and security model when making changes or suggestions to the codebase. Special attention should be paid to maintaining the security of the client-side decryption approach. 

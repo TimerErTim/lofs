@@ -38,11 +38,13 @@ The application follows a static site generation (SSG) approach with the followi
    - Client-side password protection
    - Token-based authentication stored in localStorage
    - SHA-256 password hashing
+   - Password validation through successful decryption
 
 2. **Data Management**:
    - Encrypted ZIP archive containing notes and images
    - Notes stored as JSON with text and optional image references
-   - Decryption occurs at build time only
+   - Encryption and decryption both occur client-side
+   - Data is never decrypted in the build process
 
 3. **UI Components**:
    - Login form for access control
@@ -51,14 +53,14 @@ The application follows a static site generation (SSG) approach with the followi
 
 4. **Build Process**:
    - Static site generation using Next.js
-   - Environment variables for secrets
+   - No secrets needed during build
    - Export to static HTML/CSS/JS
 
 ### Security Considerations
 
 1. The project should never store unencrypted notes in the repository
 2. Password hashing should use strong cryptographic methods (SHA-256)
-3. Secrets should be managed via GitHub Secrets or environment variables
+3. Decryption should occur only in the client browser
 4. Source notes directory should be excluded from git
 
 ## Examples
@@ -67,7 +69,7 @@ The application follows a static site generation (SSG) approach with the followi
 
 1. User navigates to the deployed site
 2. User is presented with a login form
-3. After entering the correct password, notes are displayed
+3. After entering the correct password, notes are decrypted client-side
 4. User can navigate between different notes
 5. Session persists for 30 days or until logout
 

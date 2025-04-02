@@ -2,29 +2,43 @@ import { useState } from 'react';
 import { Input } from '@heroui/react';
 import { Button } from '@heroui/react';
 import { Card, CardHeader, CardBody, CardFooter } from '@heroui/react';
-import { validatePassword, createAuthToken } from '@/utils/auth';
+import { storeHashedPassword, createAuthToken, storePassword } from '@/utils/auth';
+import { decryptNotes } from '@/utils/decryptNotes';
 
 interface LoginFormProps {
-  onLoginSuccess: () => void;
+  encryptedData: string;
+  onLoginSuccess: (password: string) => void;
 }
 
-export default function LoginForm({ onLoginSuccess }: LoginFormProps) {
+export default function LoginForm({ encryptedData, onLoginSuccess }: LoginFormProps) {
   const [password, setPassword] = useState('');
   const [error, setError] = useState('');
   const [isLoading, setIsLoading] = useState(false);
   
-  const handleSubmit = (e: React.FormEvent) => {
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setIsLoading(true);
     setError('');
     
-    // Validate the password
-    if (validatePassword(password)) {
-      // Create auth token and notify parent
-      createAuthToken();
-      onLoginSuccess();
-    } else {
-      setError('Invalid password. Please try again.');
+    try {
+      // Try to decrypt the notes with the provided password
+      const notesData = await decryptNotes(encryptedData, password);
+      
+      if (notesData) {
+        // Decryption successful, store auth data
+        storeHashedPassword(password);
+        storePassword(password);
+        createAuthToken();
+        
+        // Notify parent with the password for decryption
+        onLoginSuccess(password);
+      } else {
+        setError('Invalid password. Please try again.');
+      }
+    } catch (error) {
+      console.error('Decryption error:', error);
+      setError('Unable to decrypt data. Please try again.');
+    } finally {
       setIsLoading(false);
     }
   };

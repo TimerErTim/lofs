@@ -3,7 +3,7 @@ import JSZip from 'jszip';
 import { Note, NotesData } from '@/types/notes';
 
 /**
- * Decrypts and extracts notes from an encrypted zip file
+ * Decrypts and extracts notes from an encrypted zip file on the client side
  * @param encryptedBase64 - Base64 encoded encrypted data
  * @param password - Password to decrypt the data
  * @returns Promise with the parsed notes data
@@ -11,14 +11,15 @@ import { Note, NotesData } from '@/types/notes';
 export async function decryptNotes(
   encryptedBase64: string,
   password: string
-): Promise<NotesData> {
+): Promise<NotesData | null> {
   try {
     // Decrypt the data using the password
     const decryptedBytes = CryptoJS.AES.decrypt(encryptedBase64, password);
     const decryptedData = decryptedBytes.toString(CryptoJS.enc.Utf8);
     
     if (!decryptedData) {
-      throw new Error('Failed to decrypt data. Incorrect password?');
+      console.error('Failed to decrypt data. Incorrect password?');
+      return null;
     }
 
     // Convert decrypted string to binary data for JSZip
@@ -32,7 +33,8 @@ export async function decryptNotes(
     const notesFile = loadedZip.file('notes.json');
     
     if (!notesFile) {
-      throw new Error('Notes file not found in the encrypted archive');
+      console.error('Notes file not found in the encrypted archive');
+      return null;
     }
     
     // Parse the notes data
@@ -62,9 +64,12 @@ export async function decryptNotes(
       }
     }
     
+    // Sort notes by date (newest first)
+    notesData.notes.sort((a, b) => new Date(b.date).getTime() - new Date(a.date).getTime());
+    
     return notesData;
   } catch (error) {
     console.error('Error decrypting notes:', error);
-    throw new Error('Failed to decrypt and load notes');
+    return null;
   }
 } 
