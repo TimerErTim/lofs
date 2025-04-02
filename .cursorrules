@@ -1,0 +1,53 @@
+# Daily Notes of Love - Cursor Rules Definition
+
+## Rule Structure Definition
+
+1. Rules for this project are structured as follows:
+   - Primary rules reside in the root `.cursorrules` file (this file)
+   - Detailed rules are stored as markdown files in the `.rules/` directory
+   - Each rule file follows the naming convention `<rule-name>.md`
+   - Rule files must be properly formatted markdown with clear sections
+
+2. Rule file structure:
+   - Each rule file MUST have a header with title (H1)
+   - Each rule file SHOULD contain the following sections:
+     - **Purpose**: Describes the intent and goal of the rule
+     - **Scope**: Defines what parts of the codebase the rule applies to
+     - **Guidelines**: Specific instructions to follow
+     - **Examples**: Where appropriate, provide code examples
+     - **References**: Links to relevant documentation or resources
+
+3. AI agents interacting with this codebase MUST:
+   - Read and adhere to all rules specified in this file and in the `.rules/` directory
+   - Always reference the appropriate rule when making decisions that involve rule adherence
+   - When rules conflict, follow the most specific rule relevant to the current context
+   - When no specific rule exists, follow general best practices and notify the user
+
+## High-Level Project Context
+
+This project is a static Next.js website for sharing private "daily love notes" with the following key features:
+
+1. **Architecture**:
+   - Next.js static site generation (SSG) using getStaticProps
+   - HeroUI component library and TailwindCSS for styling
+   - Client-side password protection for privacy
+   - Automated deployment to GitHub Pages via GitHub Actions
+
+2. **Data Flow**:
+   - Notes stored in an encrypted zip file in the repository
+   - Zip contains both text notes and images
+   - Decryption occurs at build time using environment variables
+   - Local script encrypts notes and pushes to GitHub
+
+3. **Security Model**:
+   - Notes are encrypted at rest in the repository
+   - Password-based decryption during build process
+   - Client-side authentication using localStorage
+   - Passwords stored as hashes (SHA-256)
+
+4. **Deployment Process**:
+   - GitHub Actions workflow builds and deploys to GitHub Pages
+   - Environment secrets injected at build time
+   - Static site export for hosting without server-side code
+
+AI agents should preserve this architecture and security model when making changes or suggestions to the codebase. Special attention should be paid to maintaining the separation between encrypted storage and decryption at build time. 

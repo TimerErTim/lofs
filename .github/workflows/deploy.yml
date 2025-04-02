@@ -1,0 +1,40 @@
+name: Build and Deploy
+on:
+  push:
+    branches: [ main ]
+  workflow_dispatch:
+
+jobs:
+  build-and-deploy:
+    runs-on: ubuntu-latest
+    
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+        
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+          cache: 'npm'
+          
+      - name: Install dependencies
+        run: npm install
+      
+      - name: Create env file
+        run: |
+          echo "NOTES_DECRYPTION_PASSWORD=${{ secrets.NOTES_DECRYPTION_PASSWORD }}" > .env
+          echo "NEXT_PUBLIC_HASHED_ACCESS_PASSWORD=${{ secrets.NEXT_PUBLIC_HASHED_ACCESS_PASSWORD }}" >> .env
+      
+      - name: Build
+        run: npm run build
+        
+      - name: Export static files
+        run: npm run export
+        
+      - name: Deploy to GitHub Pages
+        uses: JamesIves/github-pages-deploy-action@v4
+        with:
+          branch: gh-pages
+          folder: out
+          clean: true 
