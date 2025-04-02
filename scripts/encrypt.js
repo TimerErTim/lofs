@@ -57,11 +57,21 @@ async function encryptFolder() {
       console.warn('Images folder not found, continuing without images');
     }
     
-    // Generate the ZIP file content
-    const zipContent = await zip.generateAsync({ type: 'base64' });
+    // Generate the ZIP file content as binary (base64)
+    const zipContent = await zip.generateAsync({
+      type: 'base64',
+      compression: 'DEFLATE',
+      compressionOptions: {
+        level: 9 // Maximum compression
+      }
+    });
+
+    console.log('compressedBase64', zipContent);
     
-    // Encrypt the ZIP content
+    // Encrypt the ZIP content (already in base64 format)
+    console.log('password', password);
     const encrypted = crypto.AES.encrypt(zipContent, password).toString();
+    console.log('encrypted', encrypted);
     
     // Save to data directory
     const outputPath = path.join(__dirname, '..', 'data', 'encrypted_notes.dat');
