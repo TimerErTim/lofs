@@ -56,4 +56,10 @@ This project is a static Next.js website for sharing private "daily love notes" 
    - German formatting standards for dates, numbers, and time
    - German localization for calendar and other components
 
+6. **HeroUI Implementation**:
+   - Follow HeroUI best practices for component usage
+   - Use `onPress` instead of `onClick` for event handlers
+   - Use `isDisabled` instead of `disabled` for state props
+   - Adhere to the detailed guidelines in the `.rules/heroui-best-practices.md` file
+
 AI agents should preserve this architecture and security model when making changes or suggestions to the codebase. Special attention should be paid to maintaining the security of the client-side decryption approach. 
