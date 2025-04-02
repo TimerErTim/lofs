@@ -50,4 +50,10 @@ This project is a static Next.js website for sharing private "daily love notes" 
    - No secrets needed during build process
    - Static site export for hosting without server-side code
 
+5. **UI and Language**:
+   - HeroUI components used for all UI elements with Tailwind CSS v3.4.1
+   - All user-facing content must be in German
+   - German formatting standards for dates, numbers, and time
+   - German localization for calendar and other components
+
 AI agents should preserve this architecture and security model when making changes or suggestions to the codebase. Special attention should be paid to maintaining the security of the client-side decryption approach. 

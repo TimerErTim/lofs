@@ -6,7 +6,7 @@ import { HeroUIProvider } from "@heroui/react";
 export default function App({ Component, pageProps }: AppProps) {
   return (
     <ThemeProvider attribute="class" defaultTheme="light">
-      <HeroUIProvider>
+      <HeroUIProvider locale="de-DE">
         <Component {...pageProps} />
       </HeroUIProvider>
     </ThemeProvider>
