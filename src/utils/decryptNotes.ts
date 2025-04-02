@@ -16,8 +16,6 @@ export async function decryptNotes(
   let decryptedBase64;
   try {
     const decryptedBytes = CryptoJS.AES.decrypt(encryptedBase64, password);
-    throw new Error('fuckyo');
-    console.log(decryptedBytes);
     if (!decryptedBytes || decryptedBytes.sigBytes <= 0) {
       throw new Error("Decryption failed: Possibly incorrect password.");
     }
@@ -64,7 +62,7 @@ export async function decryptNotes(
       if (imageFile) {
         const imageData = await imageFile.async('base64');
         // Create data URL for the image
-        const extension = note.imageUrl.split('.').pop()?.toLowerCase();
+        const extension = (note.imageUrl as string).split('.').pop()?.toLowerCase();
         let mimeType = 'image/jpeg'; // Default
 
         if (extension === 'png') mimeType = 'image/png';

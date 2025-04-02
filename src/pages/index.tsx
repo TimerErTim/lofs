@@ -18,12 +18,6 @@ export default function Home({ encryptedData }: HomeProps) {
   const [notes, setNotes] = useState<Note[]>([]);
 
   useEffect(() => {
-    try {
-      throw new Error('testerror');
-    } catch (error) {
-      console.error('Error in useEffect:', error);
-    }
-
     // Check authentication status
     const checkAuth = async () => {
       const isAuth = isAuthenticated();
