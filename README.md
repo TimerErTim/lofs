@@ -6,7 +6,8 @@ A private website for sharing daily love notes with your significant other. Buil
 
 - Static site generation with Next.js
 - Encrypted notes that are decrypted at build time
-- Client-side password protection
+- Client-side password protection with dedicated login page
+- Session-based authentication with automatic redirect
 - Support for images alongside notes
 - Automatic deployment to GitHub Pages
 
@@ -19,15 +20,29 @@ A private website for sharing daily love notes with your significant other. Buil
 │   └── encrypt.js      # Script to encrypt notes
 ├── src/
 │   ├── components/     # React components
+│   │   └── AuthGuard.tsx # Authentication component
 │   ├── pages/          # Next.js pages
+│   │   ├── login.tsx   # Dedicated login page
+│   │   └── notes/      # Individual note pages
 │   ├── styles/         # CSS styles
 │   ├── types/          # TypeScript type definitions
 │   └── utils/          # Utility functions
+│       └── auth.ts     # Authentication utilities
 ├── notes-source/       # Source folder for unencrypted notes (not committed)
 │   ├── images/         # Images for notes
 │   └── notes.json      # Notes data in JSON format
 └── .github/workflows/  # GitHub Actions workflows
 ```
+
+## Authentication System
+
+The application uses a client-side authentication system:
+
+- Password protection via dedicated login page
+- Passwords are stored in sessionStorage (expires when browser is closed)
+- When accessing a protected URL without authentication, users are redirected to the login page
+- After successful login, users are redirected back to their originally requested URL
+- Authentication is validated by successful decryption of the encrypted notes
 
 ## Development
 
