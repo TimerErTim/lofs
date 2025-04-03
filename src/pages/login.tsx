@@ -4,48 +4,52 @@ import Head from 'next/head';
 import { Input } from '@heroui/react';
 import { Button } from '@heroui/react';
 import { isAuthenticated, storePassword } from '@/utils/auth';
-import { loadEncryptedNotes } from '@/utils/loadNotes';
-import { decryptNotes } from '@/utils/decryptNotes';
-import { GetStaticProps } from 'next';
+import useNotesStore from '@/store/notesStore';
+import { loadEncryptedNotesFromWindow } from '@/utils/loadNotesClient';
 
-interface LoginPageProps {
-  encryptedData: string;
-}
-
-export default function LoginPage({ encryptedData }: LoginPageProps) {
+export default function LoginPage() {
   const router = useRouter();
   const { referrer } = router.query;
-  
+
   const [password, setPassword] = useState('');
   const [error, setError] = useState('');
-  const [isLoading, setIsLoading] = useState(false);
+  const [isCheckInProgress, setIsCheckInProgress] = useState(false);
+
+  // Use the memoized hook to load encrypted data
+  const encryptedData = loadEncryptedNotesFromWindow();
+
+  // Access notes store
+  const storeEncryptedNotes = useNotesStore(state => state.storeEncryptedNotes);
 
   // If user is already authenticated, redirect to homepage or referrer
   useEffect(() => {
-    const checkAuthentication = async () => {
-      const isAuth = await isAuthenticated();
-      if (isAuth) {
+    (async () => {
+      if (await isAuthenticated()) {
         const destination = referrer && typeof referrer === 'string' ? referrer : '/';
         router.push(destination);
       }
-    };
-
-    checkAuthentication();
+    })();
   }, [router, referrer]);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    setIsLoading(true);
+
+    if (!encryptedData) {
+      setError('Encrypted data not yet loaded. Please wait.');
+      return;
+    }
+
+    setIsCheckInProgress(true);
     setError('');
-    
+
     try {
-      // Try to decrypt the notes with the provided password
-      const notesData = await decryptNotes(encryptedData, password);
-      
-      if (notesData) {
+      // Try to decrypt the notes with the provided password and store in global state
+      const success = await storeEncryptedNotes(encryptedData, password);
+
+      if (success) {
         // Decryption successful, store password
         storePassword(password);
-        
+
         // Redirect to the referrer URL or homepage
         if (referrer && typeof referrer === 'string') {
           router.push(referrer);
@@ -53,13 +57,13 @@ export default function LoginPage({ encryptedData }: LoginPageProps) {
           router.push('/');
         }
       } else {
-        setError('Ungültiges Passwort. Bitte versuchen Sie es erneut.');
+        setError('Ungültiges Passwort');
       }
     } catch (error) {
       console.error('Decryption error:', error);
-      setError('Entschlüsselung fehlgeschlagen. Bitte versuchen Sie es erneut.');
+      setError('Entschlüsselung fehlgeschlagen');
     } finally {
-      setIsLoading(false);
+      setIsCheckInProgress(false);
     }
   };
 
@@ -71,11 +75,12 @@ export default function LoginPage({ encryptedData }: LoginPageProps) {
         <meta name="viewport" content="width=device-width, initial-scale=1" />
         <link rel="icon" href="/favicon.ico" />
       </Head>
-      
+
       <div className="flex items-center justify-center min-h-screen bg-gray-100 dark:bg-gray-900">
         <div className="w-full max-w-md p-8 bg-white dark:bg-gray-800 rounded-lg shadow-md">
           <h1 className="text-2xl font-bold mb-6 text-center">Login</h1>
-          
+
+
           <form onSubmit={handleSubmit}>
             <div className="mb-4">
               <Input
@@ -88,16 +93,16 @@ export default function LoginPage({ encryptedData }: LoginPageProps) {
                 autoFocus
               />
             </div>
-            
+
             {error && (
               <div className="mb-4 text-red-500 text-sm text-center">
                 {error}
               </div>
             )}
-            
+
             <Button
               type="submit"
-              isLoading={isLoading}
+              isLoading={isCheckInProgress}
               className="w-full"
             >
               Anmelden
@@ -107,24 +112,4 @@ export default function LoginPage({ encryptedData }: LoginPageProps) {
       </div>
     </>
   );
-}
-
-export const getStaticProps: GetStaticProps = async () => {
-  try {
-    // Load encrypted notes without decryption
-    const encryptedData = await loadEncryptedNotes();
-    
-    return {
-      props: {
-        encryptedData,
-      },
-    };
-  } catch (error) {
-    console.error('Error in getStaticProps:', error);
-    return {
-      props: {
-        encryptedData: '',
-      },
-    };
-  }
-}; 
+} 

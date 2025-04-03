@@ -5,63 +5,46 @@ import { GetStaticProps, GetStaticPaths } from 'next';
 import { Button, Card, CardHeader, CardBody, CardFooter } from '@heroui/react';
 import { format } from 'date-fns';
 import { de } from 'date-fns/locale';
-import { loadEncryptedNotes } from '@/utils/loadNotes';
-import { decryptNotes } from '@/utils/decryptNotes';
 import { decryptNotesAtBuildTime } from '@/utils/serverDecrypt';
-import { getStoredPassword } from '@/utils/auth';
+import useNotesStore from '@/store/notesStore';
 import { Note } from '@/types/notes';
 
 interface NotePageProps {
-  encryptedData: string;
   date: string;
 }
 
-export default function NotePage({ encryptedData, date }: NotePageProps) {
+export default function NotePage({ date }: NotePageProps) {
   const router = useRouter();
+  const { notes, isLoaded } = useNotesStore();
   
   const [loading, setLoading] = useState(true);
-  const [notes, setNotes] = useState<Note[]>([]);
   const [currentNote, setCurrentNote] = useState<Note | null>(null);
   const [currentIndex, setCurrentIndex] = useState(-1);
   
   useEffect(() => {
-    // Load and decrypt notes - AuthGuard ensures we have a password
-    const loadNotes = async () => {
-      const storedPassword = getStoredPassword();
+    // Notes are already loaded by AuthGuard in global state
+    if (isLoaded && date && notes.length > 0) {
+      // Find the note by date
+      const foundNoteIndex = notes.findIndex(note => {
+        const noteDate = format(new Date(note.date), 'yyyy-MM-dd');
+        return noteDate === date;
+      });
       
-      if (storedPassword && date) {
-        try {
-          const decryptedData = await decryptNotes(encryptedData, storedPassword);
-          if (decryptedData) {
-            setNotes(decryptedData.notes);
-            
-            // Find the note by date
-            const foundNoteIndex = decryptedData.notes.findIndex(note => {
-              const noteDate = format(new Date(note.date), 'yyyy-MM-dd');
-              return noteDate === date;
-            });
-            
-            if (foundNoteIndex >= 0) {
-              setCurrentNote(decryptedData.notes[foundNoteIndex]);
-              setCurrentIndex(foundNoteIndex);
-            } else {
-              // Note not found, redirect to homepage
-              router.push('/');
-            }
-          }
-        } catch (error) {
-          console.error('Error decrypting with stored password:', error);
-          router.push('/');
-        }
+      if (foundNoteIndex >= 0) {
+        setCurrentNote(notes[foundNoteIndex]);
+        setCurrentIndex(foundNoteIndex);
+      } else {
+        // Note not found, redirect to homepage
+        router.push('/');
       }
       
       setLoading(false);
-    };
-    
-    if (encryptedData) {
-      loadNotes();
+    } else if (isLoaded && notes.length === 0) {
+      // No notes available
+      router.push('/');
+      setLoading(false);
     }
-  }, [encryptedData, date, router]);
+  }, [date, isLoaded, notes, router]);
   
   const handleNext = () => {
     if (notes.length <= 1) return;
@@ -220,12 +203,8 @@ export const getStaticProps: GetStaticProps = async ({ params }) => {
       return { notFound: true };
     }
     
-    // Load encrypted notes without decryption
-    const encryptedData = await loadEncryptedNotes();
-    
     return {
       props: {
-        encryptedData,
         date,
       },
     };
