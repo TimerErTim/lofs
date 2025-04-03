@@ -55,17 +55,25 @@ export default function NotePage({ encryptedData, date }: NotePageProps) {
                 }
               }
             } else {
-              router.push('/');
+              // Redirect to login with referrer path
+              const currentPath = router.asPath;
+              router.push(`/login?referrer=${encodeURIComponent(currentPath)}`);
             }
           } catch (error) {
             console.error('Error decrypting with stored password:', error);
-            router.push('/');
+            // Redirect to login with referrer path
+            const currentPath = router.asPath;
+            router.push(`/login?referrer=${encodeURIComponent(currentPath)}`);
           }
         } else {
-          router.push('/');
+          // Redirect to login with referrer path
+          const currentPath = router.asPath;
+          router.push(`/login?referrer=${encodeURIComponent(currentPath)}`);
         }
       } else {
-        router.push('/');
+        // Redirect to login with referrer path
+        const currentPath = router.asPath;
+        router.push(`/login?referrer=${encodeURIComponent(currentPath)}`);
       }
       
       setLoading(false);
@@ -109,7 +117,9 @@ export default function NotePage({ encryptedData, date }: NotePageProps) {
   }
   
   if (!authenticated || !currentNote) {
-    router.push('/');
+    // Redirect to login with referrer path
+    const currentPath = router.asPath;
+    router.push(`/login?referrer=${encodeURIComponent(currentPath)}`);
     return null;
   }
   

@@ -64,7 +64,7 @@ A private website for sharing daily love notes with your significant other. Buil
    ```
 3. Run the encryption script:
    ```
-   npm run encrypt -- ./path-to-notes-folder your-password
+   npm run build:notes -- ./path-to-notes-folder your-password
    ```
 
 ## Deployment
@@ -76,16 +76,6 @@ The site is automatically deployed to GitHub Pages when changes are pushed to th
 For deployment, you need to set up the following GitHub repository secrets:
 
 - `NOTES_DECRYPTION_PASSWORD`: The password to decrypt the notes data
-- `NEXT_PUBLIC_HASHED_ACCESS_PASSWORD`: SHA-256 hash of the website access password
-
-You can generate the hashed password using a tool like [SHA256 Online](https://emn178.github.io/online-tools/sha256.html) or with code:
-
-```javascript
-const CryptoJS = require('crypto-js');
-const password = 'your-access-password';
-const hashed = CryptoJS.SHA256(password).toString();
-console.log(hashed);
-```
 
 ## License
 
