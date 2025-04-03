@@ -1,0 +1,59 @@
+<rule id="project-overview" type="core">
+  <meta>
+    <title>Project Overview</title>
+    <version>1.0</version>
+    <scope>all</scope>
+  </meta>
+  
+  <goals>
+    <goal>Secure private platform for sharing daily love notes between partners</goal>
+    <goal>Security through encryption at rest and access control</goal>
+    <goal>Beautiful responsive UI with modern web technologies</goal>
+    <goal>Static website with no server-side requirements</goal>
+    <goal>Automated deployment with security for sensitive content</goal>
+  </goals>
+  
+  <stack>
+    <frontend>Next.js with TypeScript</frontend>
+    <ui>HeroUI components</ui>
+    <styling>TailwindCSS v3.4.1</styling>
+    <encryption>CryptoJS for AES encryption/decryption</encryption>
+    <files>JSZip for packaging notes and images</files>
+    <auth>Client-side with SHA-256 password hashing</auth>
+    <deploy>GitHub Pages via GitHub Actions</deploy>
+  </stack>
+  
+  <architecture>
+    <auth-layer>Client-side password protection; Token-based auth in localStorage; SHA-256 hashing; Validation via successful decryption</auth-layer>
+    <data-management>Encrypted ZIP with notes/images; Notes as JSON with text and optional image refs; Client-side encryption/decryption only; No build-time decryption</data-management>
+    <ui-components>Login form; Notes display with image support; Navigation between notes</ui-components>
+    <build>Static site generation (SSG); No secrets during build; Export to static HTML/CSS/JS</build>
+  </architecture>
+  
+  <security>Never store unencrypted notes in repo; Strong password hashing (SHA-256); Client-only decryption; Source notes directory excluded from git</security>
+  
+  <flow>
+    <user>Login → Decrypt notes client-side → Navigate between notes → Session persists 30 days</user>
+    <data-update>Create notes locally → Run encrypt script → Commit encrypted data → GitHub Actions deploys</data-update>
+  </flow>
+  
+  <examples>
+    <user-flow>
+      <![CDATA[
+      1. User visits site → Login form shown
+      2. User enters correct password → Notes decrypted in browser
+      3. User navigates between date-based notes
+      4. Session persists for 30 days via localStorage token
+      5. User logs out → Session cleared
+      ]]>
+    </user-flow>
+  </examples>
+  
+  <references>
+    <ref>NextJS:https://nextjs.org/docs</ref>
+    <ref>HeroUI:https://www.heroui.com/docs</ref>
+    <ref>TailwindCSS:https://tailwindcss.com/docs</ref>
+    <ref>GitHub-Actions:https://docs.github.com/en/actions</ref>
+    <ref>CryptoJS:https://cryptojs.gitbook.io/docs/</ref>
+  </references>
+</rule> 

@@ -1,0 +1,104 @@
+<rule id="deployment" type="critical">
+  <meta>
+    <title>Deployment Guidelines</title>
+    <version>1.0</version>
+    <scope>files:.github/workflows/*,next.config.*,package.json</scope>
+  </meta>
+  
+  <static-generation>
+    <build>Next.js SSG; All pages pre-rendered; NOTES_DECRYPTION_PASSWORD env var for build; Used to decrypt for static paths; No fallback pages</build>
+    <output>Static website; No server code; Configure in next.config.ts; Output to out/</output>
+  </static-generation>
+  
+  <env-vars>
+    <required>
+      <var name="NOTES_DECRYPTION_PASSWORD">Build-time decrypt for static path generation</var>
+      <var name="NEXT_PUBLIC_HASHED_ACCESS_PASSWORD">Public hash of website access password</var>
+    </required>
+    <management>
+      <dev>Store in .env.local (not committed to repo)</dev>
+      <prod>Store in GitHub Repository Secrets</prod>
+    </management>
+  </env-vars>
+  
+  <secrets>
+    <rule>Store all secrets in GitHub Repository Secrets</rule>
+    <rule>No secrets should be committed to the repository</rule>
+    <rule>NOTES_DECRYPTION_PASSWORD secret must be in GitHub Repository Secrets</rule>
+    <rule>Password hash is public and can be exposed in client-side code</rule>
+  </secrets>
+  
+  <github-actions>
+    <config>
+      <file>.github/workflows/deploy.yml</file>
+      <triggers>Push to main branch; Manual dispatch</triggers>
+      <env>Node.js 20.x</env>
+      <target>GitHub Pages</target>
+    </config>
+    <steps>Checkout → Setup Node → Install deps → Build with env vars → Export static → Deploy</steps>
+    <errors>Build fails without password; Fails on decryption error; No fallback mechanism</errors>
+  </github-actions>
+  
+  <github-pages>
+    <settings>Source: gh-pages branch; Optional custom domain; Enforce HTTPS</settings>
+    <custom-domain optional="true">Configure DNS with provider; Add CNAME to public/; Enable HTTPS</custom-domain>
+  </github-pages>
+  
+  <examples>
+    <workflow-yaml>
+      <![CDATA[
+      name: Build and Deploy
+      on:
+        push:
+          branches: [ main ]
+        workflow_dispatch:
+
+      jobs:
+        build-and-deploy:
+          runs-on: ubuntu-latest
+          
+          steps:
+            - name: Checkout code
+              uses: actions/checkout@v4
+              
+            - name: Setup Node.js
+              uses: actions/setup-node@v4
+              with:
+                node-version: '20'
+                cache: 'npm'
+                
+            - name: Install dependencies
+              run: npm install
+            
+            - name: Build
+              env:
+                NOTES_DECRYPTION_PASSWORD: ${{ secrets.NOTES_DECRYPTION_PASSWORD }}
+              run: npm run build
+              
+            - name: Export static files
+              run: npm run export
+              
+            - name: Deploy to GitHub Pages
+              uses: JamesIves/github-pages-deploy-action@v4
+              with:
+                branch: gh-pages
+                folder: out
+                clean: true
+      ]]>
+    </workflow-yaml>
+    <env-file>
+      <![CDATA[
+      # .env.local (development only, do not commit)
+      NOTES_DECRYPTION_PASSWORD=your-secure-password
+      NEXT_PUBLIC_HASHED_ACCESS_PASSWORD=5e884898da28047151d0e56f8dc6292773603d0d6aabbdd62a11ef721d1542d8
+      ]]>
+    </env-file>
+  </examples>
+  
+  <references>
+    <ref>NextSSG:https://nextjs.org/docs/basic-features/data-fetching/get-static-props</ref>
+    <ref>GitHubActions:https://docs.github.com/en/actions</ref>
+    <ref>GitHubPages:https://docs.github.com/en/pages</ref>
+    <ref>NextEnv:https://nextjs.org/docs/basic-features/environment-variables</ref>
+  </references>
+</rule> 

@@ -4,62 +4,64 @@
 
 1. Rules for this project are structured as follows:
    - Primary rules reside in the root `.cursorrules` file (this file)
-   - Detailed rules are stored as markdown files in the `.rules/` directory
-   - Each rule file follows the naming convention `<rule-name>.md`
-   - Rule files must be properly formatted markdown with clear sections
+   - Detailed rules are stored as XML files in the `.rules/` directory
+   - Each rule file follows the naming convention `<rule-name>.xml`
+   - Rule files must be properly formatted XML with consistent structure
 
 2. Rule file structure:
-   - Each rule file MUST have a header with title (H1)
-   - Each rule file SHOULD contain the following sections:
-     - **Purpose**: Describes the intent and goal of the rule
-     - **Scope**: Defines what parts of the codebase the rule applies to
-     - **Guidelines**: Specific instructions to follow
-     - **Examples**: Where appropriate, provide code examples
-     - **References**: Links to relevant documentation or resources
+   - Each rule file MUST use the `<rule>` root element with appropriate id and type attributes
+   - Each rule file MUST include a `<meta>` section with title, version, and scope
+   - Each rule file SHOULD follow the information-dense format for AI/LLM consumption
+   - XML structure should group related concepts under appropriate tags
+   - Use semicolon-delimited lists for concise rule presentation where appropriate
+   - Code examples should use CDATA sections to preserve formatting
 
 3. AI agents interacting with this codebase MUST:
-   - Read and adhere to all rules specified in this file and in the `.rules/` directory
+   - Read and adhere to all rules specified in the `.rules/*.xml` files
    - Always reference the appropriate rule when making decisions that involve rule adherence
    - When rules conflict, follow the most specific rule relevant to the current context
    - When no specific rule exists, follow general best practices and notify the user
 
-## High-Level Project Context
+## Rule Locations and Purposes
 
-This project is a static Next.js website for sharing private "daily love notes" with the following key features:
+The following rules exist and should be referenced for related concerns:
 
-1. **Architecture**:
-   - Next.js static site generation (SSG) using getStaticProps
-   - HeroUI component library and TailwindCSS for styling
-   - Client-side password protection for privacy
-   - Automated deployment to GitHub Pages via GitHub Actions
+1. `.rules/project-overview.xml` - Core project information and architecture
+2. `.rules/security-model.xml` - Security architecture and practices
+3. `.rules/heroui-best-practices.xml` - HeroUI component library usage patterns
+4. `.rules/ui-and-language.xml` - UI components and German language requirements
+5. `.rules/deployment.xml` - Deployment process and configuration
+6. `.rules/code-style.xml` - Code formatting and organization standards
 
-2. **Data Flow**:
-   - Notes stored in an encrypted zip file in the repository
-   - Zip contains both text notes and images
-   - Encrypted data is passed to the client and decrypted in the browser
-   - Local script encrypts notes and pushes to GitHub
+Each rule file contains detailed guidelines in an information-dense format optimized for AI/LLM processing while maintaining human readability. When working on a specific part of the codebase, check the most relevant rule files first.
 
-3. **Security Model**:
-   - Notes are encrypted at rest in the repository
-   - Password-based decryption occurs entirely client-side
-   - Client-side authentication using localStorage
-   - Passwords stored as hashes in localStorage
+## Rule Precedence
 
-4. **Deployment Process**:
-   - GitHub Actions workflow builds and deploys to GitHub Pages
-   - No secrets needed during build process
-   - Static site export for hosting without server-side code
+1. Security rules take highest precedence over all other rules
+2. Deployment rules take precedence over UI and code style rules
+3. UI/language rules take precedence over general code style
+4. When conflicts occur, security and correctness should never be compromised
 
-5. **UI and Language**:
-   - HeroUI components used for all UI elements with Tailwind CSS v3.4.1
-   - All user-facing content must be in German
-   - German formatting standards for dates, numbers, and time
-   - German localization for calendar and other components
+## Rule Format
 
-6. **HeroUI Implementation**:
-   - Follow HeroUI best practices for component usage
-   - Use `onPress` instead of `onClick` for event handlers
-   - Use `isDisabled` instead of `disabled` for state props
-   - Adhere to the detailed guidelines in the `.rules/heroui-best-practices.md` file
+All rules are formatted using a custom XML schema designed for AI/LLM consumption:
 
-AI agents should preserve this architecture and security model when making changes or suggestions to the codebase. Special attention should be paid to maintaining the security of the client-side decryption approach. 
+```xml
+<rule id="rule-name" type="priority-level">
+  <meta>
+    <title>Rule Title</title>
+    <version>1.0</version>
+    <scope>files:pattern-to-apply-to</scope>
+  </meta>
+  
+  <section-name>
+    <subsection>Concise; Semicolon-delimited; Information-dense guidance</subsection>
+  </section-name>
+  
+  <!-- Additional sections as needed -->
+  
+  <references>
+    <ref>ShortName:URL</ref>
+  </references>
+</rule>
+```
