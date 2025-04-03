@@ -8,7 +8,7 @@ import { de } from 'date-fns/locale';
 import { loadEncryptedNotes } from '@/utils/loadNotes';
 import { decryptNotes } from '@/utils/decryptNotes';
 import { decryptNotesAtBuildTime } from '@/utils/serverDecrypt';
-import { isAuthenticated, getStoredPassword } from '@/utils/auth';
+import { getStoredPassword } from '@/utils/auth';
 import { Note } from '@/types/notes';
 
 interface NotePageProps {
@@ -19,68 +19,47 @@ interface NotePageProps {
 export default function NotePage({ encryptedData, date }: NotePageProps) {
   const router = useRouter();
   
-  const [authenticated, setAuthenticated] = useState(false);
   const [loading, setLoading] = useState(true);
   const [notes, setNotes] = useState<Note[]>([]);
   const [currentNote, setCurrentNote] = useState<Note | null>(null);
   const [currentIndex, setCurrentIndex] = useState(-1);
   
   useEffect(() => {
-    // Check authentication and decrypt notes
-    const checkAuthAndLoadNotes = async () => {
-      const isAuth = isAuthenticated();
+    // Load and decrypt notes - AuthGuard ensures we have a password
+    const loadNotes = async () => {
+      const storedPassword = getStoredPassword();
       
-      if (isAuth) {
-        const storedPassword = getStoredPassword();
-        if (storedPassword) {
-          try {
-            const decryptedData = await decryptNotes(encryptedData, storedPassword);
-            if (decryptedData) {
-              setNotes(decryptedData.notes);
-              setAuthenticated(true);
-              
-              // Find the note by date
-              if (date) {
-                const foundNoteIndex = decryptedData.notes.findIndex(note => {
-                  const noteDate = format(new Date(note.date), 'yyyy-MM-dd');
-                  return noteDate === date;
-                });
-                
-                if (foundNoteIndex >= 0) {
-                  setCurrentNote(decryptedData.notes[foundNoteIndex]);
-                  setCurrentIndex(foundNoteIndex);
-                } else {
-                  // Note not found, redirect to homepage
-                  router.push('/');
-                }
-              }
+      if (storedPassword && date) {
+        try {
+          const decryptedData = await decryptNotes(encryptedData, storedPassword);
+          if (decryptedData) {
+            setNotes(decryptedData.notes);
+            
+            // Find the note by date
+            const foundNoteIndex = decryptedData.notes.findIndex(note => {
+              const noteDate = format(new Date(note.date), 'yyyy-MM-dd');
+              return noteDate === date;
+            });
+            
+            if (foundNoteIndex >= 0) {
+              setCurrentNote(decryptedData.notes[foundNoteIndex]);
+              setCurrentIndex(foundNoteIndex);
             } else {
-              // Redirect to login with referrer path
-              const currentPath = router.asPath;
-              router.push(`/login?referrer=${encodeURIComponent(currentPath)}`);
+              // Note not found, redirect to homepage
+              router.push('/');
             }
-          } catch (error) {
-            console.error('Error decrypting with stored password:', error);
-            // Redirect to login with referrer path
-            const currentPath = router.asPath;
-            router.push(`/login?referrer=${encodeURIComponent(currentPath)}`);
           }
-        } else {
-          // Redirect to login with referrer path
-          const currentPath = router.asPath;
-          router.push(`/login?referrer=${encodeURIComponent(currentPath)}`);
+        } catch (error) {
+          console.error('Error decrypting with stored password:', error);
+          router.push('/');
         }
-      } else {
-        // Redirect to login with referrer path
-        const currentPath = router.asPath;
-        router.push(`/login?referrer=${encodeURIComponent(currentPath)}`);
       }
       
       setLoading(false);
     };
     
     if (encryptedData) {
-      checkAuthAndLoadNotes();
+      loadNotes();
     }
   }, [encryptedData, date, router]);
   
@@ -116,10 +95,8 @@ export default function NotePage({ encryptedData, date }: NotePageProps) {
     );
   }
   
-  if (!authenticated || !currentNote) {
-    // Redirect to login with referrer path
-    const currentPath = router.asPath;
-    router.push(`/login?referrer=${encodeURIComponent(currentPath)}`);
+  if (!currentNote) {
+    router.push('/');
     return null;
   }
   

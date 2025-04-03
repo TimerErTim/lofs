@@ -40,4 +40,5 @@ export function isAuthenticated(): boolean {
  */
 export function logout(): void {
   sessionStorage.removeItem(PASSWORD_KEY);
+  window.location.reload();
 } 
