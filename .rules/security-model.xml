@@ -103,4 +103,81 @@ export async function decryptNotesAtBuild(encryptedData) {
 
 - [CryptoJS Documentation](https://cryptojs.gitbook.io/docs/)
 - [Web Storage Security](https://developer.mozilla.org/en-US/docs/Web/API/Web_Storage_API/Using_the_Web_Storage_API#security)
-- [Client-Side Security Best Practices](https://cheatsheetseries.owasp.org/cheatsheets/DOM_based_XSS_Prevention_Cheat_Sheet.html) 
+- [Client-Side Security Best Practices](https://cheatsheetseries.owasp.org/cheatsheets/DOM_based_XSS_Prevention_Cheat_Sheet.html)
+
+<rule id="security-model" type="critical">
+  <meta>
+    <title>Security Model</title>
+    <version>1.0</version>
+    <scope>files:*.tsx,*.jsx,*.ts,*.js,*.yml,next.config.*</scope>
+  </meta>
+  
+  <encryption-at-rest>
+    <notes>AES via CryptoJS; Password never in repo; Stored in data/encrypted_notes.dat</notes>
+    <images>Include in encrypted ZIP; No unencrypted images in repo; Convert to data URLs during decryption</images>
+  </encryption-at-rest>
+  
+  <authentication>
+    <passwords>No plaintext; SHA-256 hash only; Client-side hashing; Validation via successful decryption</passwords>
+    <sessions>Tokens in localStorage; Include creation/expiry timestamps; 30-day validity; Store hashed password; Extra hashing for decryption password</sessions>
+  </authentication>
+  
+  <client-side>
+    <decryption>Browser-only; Never send password to server; No server-side password knowledge</decryption>
+    <storage>Proper hashing for localStorage; Clear on logout; No exposure to external scripts</storage>
+  </client-side>
+  
+  <build-vs-runtime>
+    <build>No decryption; No secrets needed; Pass encrypted data to client</build>
+    <runtime>Browser-only decryption; Client-side auth; Display after successful auth</runtime>
+  </build-vs-runtime>
+  
+  <security-fails>
+    <fail type="critical">Sending password to server</fail>
+    <fail type="critical">Storing unencrypted password</fail>
+    <fail type="critical">Decrypting notes at build time</fail>
+    <fail type="critical">Storing unencrypted notes in the repository</fail>
+  </security-fails>
+  
+  <examples>
+    <correct-password-handling>
+      <![CDATA[
+      // Correct: Store hashed password in localStorage
+      export function storeHashedPassword(password: string): void {
+        const hashedPassword = CryptoJS.SHA256(password).toString();
+        localStorage.setItem('hashed_password_key', hashedPassword);
+      }
+
+      // Correct: Client-side decryption
+      const decryptedData = await decryptNotes(encryptedData, password);
+      if (decryptedData) {
+        // Authentication successful
+        setNotes(decryptedData.notes);
+      }
+      ]]>
+    </correct-password-handling>
+    <incorrect-practices>
+      <![CDATA[
+      // WRONG: Sending password to server
+      fetch('/api/validate-password', {
+        method: 'POST',
+        body: JSON.stringify({ password })
+      });
+
+      // WRONG: Storing unencrypted password
+      localStorage.setItem('user_password', password);
+
+      // WRONG: Decrypting notes at build time
+      export async function decryptNotesAtBuild(encryptedData) {
+        // This would expose decrypted content at build time
+      }
+      ]]>
+    </incorrect-practices>
+  </examples>
+  
+  <references>
+    <ref>CryptoJS:https://cryptojs.gitbook.io/docs/</ref>
+    <ref>WebStorage:https://developer.mozilla.org/en-US/docs/Web/API/Web_Storage_API/Using_the_Web_Storage_API#security</ref>
+    <ref>ClientSecurity:https://cheatsheetseries.owasp.org/cheatsheets/DOM_based_XSS_Prevention_Cheat_Sheet.html</ref>
+  </references>
+</rule> 

@@ -1,0 +1,72 @@
+<rule id="code-style" type="mandatory">
+  <meta>
+    <title>Code Style Guidelines</title>
+    <version>1.0</version>
+    <scope>files:*.tsx,*.jsx,*.ts,*.js,*.css,*.html</scope>
+  </meta>
+  
+  <ts-js>
+    <formatting>2-space indent; Semicolons; 100 char line limit; Single quotes; Trailing commas</formatting>
+    <typescript>Type all params and returns; Use interfaces for objects; Avoid any; Type component props/state</typescript>
+    <naming>
+      <rule>PascalCase: components, types, interfaces</rule>
+      <rule>camelCase: variables, functions, methods</rule>
+      <rule>UPPER_SNAKE_CASE: constants</rule>
+      <rule>Use descriptive names that reflect purpose</rule>
+    </naming>
+    <structure>One component per file; Default export main component; Group imports by type; Props interfaces at top</structure>
+  </ts-js>
+  
+  <react-next>
+    <components>Functional with hooks; Extract complex logic to custom hooks; Use React.memo for optimization; Single responsibility</components>
+    <state>Local for component-specific; Lift when shared; Avoid prop drilling; useReducer for complex logic</state>
+    <next-js>File-based routing; getStaticProps for build-time data; Handle dynamic imports; Mind SSG constraints</next-js>
+  </react-next>
+  
+  <styling>
+    <tailwind>Utility-first approach; Group related classes; Extract common patterns; Consistent color/spacing values</tailwind>
+    <custom>CSS modules when needed; BEM naming convention; Simple specific selectors; Avoid !important</custom>
+  </styling>
+  
+  <errors>Try/catch error-prone operations; Provide meaningful error messages; Gracefully handle failures with fallbacks; Log errors with appropriate context</errors>
+  
+  <examples>
+    <component-structure>
+      <![CDATA[
+      import React, { useState, useEffect } from 'react';
+      import { Card, Button } from '@heroui/react';
+      import { formatDate } from '@/utils/dates';
+      import { Note } from '@/types/notes';
+      
+      interface NoteCardProps {
+        note: Note;
+        onAction: (id: string) => void;
+      }
+      
+      export default function NoteCard({ note, onAction }: NoteCardProps) {
+        const [isExpanded, setIsExpanded] = useState(false);
+        
+        const handleToggle = () => {
+          setIsExpanded((prev) => !prev);
+        };
+        
+        return (
+          <Card className="h-full">
+            <CardHeader className="pb-0">
+              <h3 className="text-lg font-semibold">{formatDate(note.date)}</h3>
+            </CardHeader>
+            {/* Component content */}
+          </Card>
+        );
+      }
+      ]]>
+    </component-structure>
+  </examples>
+  
+  <references>
+    <ref>TypeScript:https://www.typescriptlang.org/docs/handbook/declaration-files/by-example.html</ref>
+    <ref>ReactHooks:https://reactjs.org/docs/hooks-intro.html</ref>
+    <ref>TailwindCSS:https://tailwindcss.com/docs</ref>
+    <ref>NextJS:https://nextjs.org/docs/pages/building-your-application/routing</ref>
+  </references>
+</rule> 

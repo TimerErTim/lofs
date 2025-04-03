@@ -1,0 +1,91 @@
+<rule id="heroui-best-practices" type="mandatory">
+  <meta>
+    <title>HeroUI Best Practices</title>
+    <version>1.0</version>
+    <scope>files:*.tsx,*.jsx,*.ts,*.js</scope>
+  </meta>
+  
+  <event-handlers>
+    <naming>
+      <correct>onPress for clickable components; onChange for form elements; onValueChange for self-managed state; onSelectionChange for Calendar/Select</correct>
+      <incorrect>onClick, onSelect (deprecated)</incorrect>
+    </naming>
+    <patterns>Typed event parameters; Form handlers receive value directly; Interactive components receive React event object</patterns>
+    <deprecated>onClick→onPress; onSelect→component-specific; disabled→isDisabled; required→isRequired</deprecated>
+  </event-handlers>
+  
+  <component-state>
+    <patterns>
+      <controlled>Use value/onChange pattern</controlled>
+      <uncontrolled>Use defaultValue pattern</uncontrolled>
+      <rule>Never mix controlled and uncontrolled patterns for the same component</rule>
+    </patterns>
+    <naming>
+      <boolean>Use is prefix (isOpen, isDisabled, isRequired)</boolean>
+      <defaults>Use defaultXXX prefix (defaultValue, defaultOpen)</defaults>
+      <callbacks>Use onXXXChange pattern (onValueChange, onSelectionChange)</callbacks>
+    </naming>
+  </component-state>
+  
+  <styling>
+    <customization>Use className prop for TailwindCSS; Use variant/size/color/radius props for predefined variations; Use arbitrary value syntax for advanced styling</customization>
+    <colors>Apply color schemes via colorScheme prop; Use HeroUI built-in palette for consistency</colors>
+  </styling>
+  
+  <accessibility>
+    <rule>Do not manually set aria-* attributes handled by HeroUI</rule>
+    <rule>Use appropriate semantic components (Button for buttons, etc.)</rule>
+    <rule>Ensure proper focus management through HeroUI's built-in support</rule>
+  </accessibility>
+  
+  <examples>
+    <correct>
+      <button>
+        <![CDATA[
+        <Button 
+          onPress={handleButtonPress} 
+          isDisabled={isLoading}
+        >
+          Submit
+        </Button>
+        ]]>
+      </button>
+      <input>
+        <![CDATA[
+        <Input
+          value={inputValue}
+          onChange={handleInputChange}
+          isRequired
+        />
+        ]]>
+      </input>
+      <calendar>
+        <![CDATA[
+        <Calendar
+          value={date}
+          onChange={handleDateChange}
+          isDateUnavailable={isDateUnavailable}
+        />
+        ]]>
+      </calendar>
+    </correct>
+    <incorrect>
+      <button>
+        <![CDATA[
+        <Button 
+          onClick={handleButtonClick} 
+          disabled={isLoading}
+        >
+          Submit
+        </Button>
+        ]]>
+      </button>
+    </incorrect>
+  </examples>
+  
+  <references>
+    <ref>HeroUI:https://www.heroui.com/docs</ref>
+    <ref>ReactAria:https://react-spectrum.adobe.com/react-aria/</ref>
+    <ref>Migration:https://www.heroui.com/docs/guide/nextui-to-heroui</ref>
+  </references>
+</rule> 

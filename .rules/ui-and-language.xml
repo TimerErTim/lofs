@@ -1,0 +1,34 @@
+<rule id="ui-and-language" type="mandatory">
+  <meta>
+    <title>UI and Language Guidelines</title>
+    <version>1.0</version>
+    <scope>files:*.tsx,*.jsx,*.ts,*.js,*.md,*.html,tailwind.config.*</scope>
+  </meta>
+  
+  <heroui>
+    <usage>Use @heroui/react components; Follow official docs; Compatible with Tailwind v3.4.1; Import individual components</usage>
+    <config>Use heroui() plugin in tailwind.config.ts; Include content paths; Configure PostCSS</config>
+    <styling>Apply via Tailwind utilities; Use theming system; Support dark mode with dark: variant; Use class strategy</styling>
+    <a11y>Use built-in features; Ensure focus management; Maintain semantic HTML; Test keyboard nav</a11y>
+  </heroui>
+  
+  <german-language required="true">
+    <requirement>ALL user-facing text in German: UI labels, forms, errors, titles, meta, help text</requirement>
+    <guidelines>Natural conversational German; Formal "Sie" form; German capitalization; Proper punctuation; Consistent terminology</guidelines>
+    <formatting>German date format (DD.MM.YYYY); Comma decimal separator; Period thousands separator; German currency format; Configure date-fns locale</formatting>
+    <calendar>German locale; German month/weekday names; Monday start; 24h time format</calendar>
+    <examples>
+      <buttons>Anmelden, Abbrechen, Speichern, Weiter</buttons>
+      <forms>Benutzername, Passwort, E-Mail-Adresse</forms>
+      <validation>Dieses Feld ist erforderlich, Bitte geben Sie eine gültige E-Mail-Adresse ein</validation>
+      <dates>01.04.2023 (for April 1, 2023)</dates>
+    </examples>
+  </german-language>
+  
+  <references>
+    <ref>HeroUI:https://www.heroui.com/docs</ref>
+    <ref>TailwindCSS:https://tailwindcss.com/docs</ref>
+    <ref>GermanStyle:https://developers.google.com/style/german</ref>
+    <ref>Localization:https://www.w3.org/International/questions/qa-german</ref>
+  </references>
+</rule> 
