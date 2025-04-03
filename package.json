@@ -7,7 +7,7 @@
     "build": "next build",
     "start": "next start",
     "prod": "next build && npx serve out/",
-    "encrypt": "node scripts/encrypt.js",
+    "build:notes": "node scripts/encrypt.js",
     "lint": "next lint"
   },
   "dependencies": {
