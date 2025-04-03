@@ -76,7 +76,7 @@ export default function LoginPage() {
 
       <div className="flex items-center justify-center min-h-screen bg-gray-100 dark:bg-gray-900">
         <div className="w-full max-w-md p-8 bg-white dark:bg-gray-800 rounded-lg shadow-md">
-          <h1 className="text-2xl font-bold mb-6 text-center">Login</h1>
+          <h1 className="text-2xl font-bold mb-6 text-center text-gray-800 dark:text-gray-100">Login</h1>
 
 
           <form onSubmit={handleSubmit}>
@@ -93,7 +93,7 @@ export default function LoginPage() {
             </div>
 
             {error && (
-              <div className="mb-4 text-red-500 text-sm text-center">
+              <div className="mb-4 text-red-600 dark:text-red-400 text-sm text-center font-medium">
                 {error}
               </div>
             )}
