@@ -21,14 +21,11 @@ jobs:
       - name: Install dependencies
         run: npm install
       
-      - name: Build
+      - name: Build static files
         env:
           NOTES_DECRYPTION_PASSWORD: ${{ secrets.NOTES_DECRYPTION_PASSWORD }}
         run: npm run build
-        
-      - name: Export static files
-        run: npm run build
-        
+
       - name: Deploy to GitHub Pages
         uses: JamesIves/github-pages-deploy-action@v4
         with:
