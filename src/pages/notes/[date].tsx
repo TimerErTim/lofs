@@ -97,10 +97,8 @@ export default function NotePage({ date }: NotePageProps) {
   return (
     <>
       <Head>
-        <title>Notiz - {formatDate(currentNote.date)} | Tägliche Liebesnotizen</title>
-        <meta name="description" content="Private Liebesnotizen" />
+        <title>Notiz - {formatDate(currentNote.date)} | Lofs</title>
         <meta name="viewport" content="width=device-width, initial-scale=1" />
-        <link rel="icon" href="/favicon.ico" />
       </Head>
       
       <div className="flex flex-col min-h-screen bg-gray-100 dark:bg-gray-900">

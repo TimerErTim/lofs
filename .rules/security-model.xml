@@ -1,12 +1,12 @@
 <rule id="security-model" type="critical">
   <meta>
     <title>Security Model</title>
-    <version>1.1</version>
+    <version>1.3</version>
     <scope>files:*.tsx,*.jsx,*.ts,*.js,*.yml,next.config.*</scope>
   </meta>
   
   <encryption-at-rest>
-    <notes>AES via CryptoJS; Password never in repo; Stored in data/encrypted_notes.dat</notes>
+    <notes>AES via CryptoJS; Password never in repo; Stored in data/encrypted_notes.dat; Embedded in HTML at build time via _document.tsx</notes>
     <images>Include in encrypted ZIP; No unencrypted images in repo; Convert to data URLs during decryption</images>
   </encryption-at-rest>
   
@@ -16,20 +16,28 @@
   </authentication>
   
   <client-side>
-    <decryption>Browser-only; Never send password to server; No server-side password knowledge</decryption>
-    <storage>sessionStorage for passwords; Clear on logout; No exposure to external scripts</storage>
+    <decryption>Browser-only; Never send password to server; No server-side password knowledge; Decrypted notes cached in global state</decryption>
+    <storage>sessionStorage for passwords; Global state for decrypted notes; Clear on logout; No exposure to external scripts</storage>
   </client-side>
   
   <build-vs-runtime>
-    <build>No decryption; No secrets needed; Pass encrypted data to client</build>
-    <runtime>Browser-only decryption; Client-side auth; Display after successful auth</runtime>
+    <build>No decryption; Only loading encrypted data from filesystem; Embedding encrypted data in HTML via getInitialProps; Separate server-side utility for loading data</build>
+    <runtime>Browser-only decryption; Client-side auth; Decrypted data cached in global state; Display after successful auth</runtime>
   </build-vs-runtime>
+  
+  <document-injection>
+    <script>No exposure of sensitive data; Only encrypted content embedded; Script element created at build time</script>
+    <placement>Before Main content; Outside of hydration boundaries; Clean separation of concerns</placement>
+    <access>Browser-only global variable; Type-safe access; Memoized retrieval via custom hook</access>
+  </document-injection>
   
   <security-fails>
     <fail type="critical">Sending password to server</fail>
     <fail type="critical">Storing unencrypted password in localStorage (persistent)</fail>
     <fail type="critical">Decrypting notes at build time</fail>
     <fail type="critical">Storing unencrypted notes in the repository</fail>
+    <fail type="critical">Storing decrypted notes in persistent storage</fail>
+    <fail type="critical">Loading decryption key in _document.tsx</fail>
   </security-fails>
   
   <examples>
@@ -46,10 +54,10 @@
         return getStoredPassword() !== null;
       }
 
-      // Correct: Client-side decryption with redirect
+      // Correct: Client-side decryption with global state caching
       try {
-        const decryptedData = await decryptNotes(encryptedData, password);
-        if (decryptedData) {
+        const success = await loadNotes(encryptedData, password);
+        if (success) {
           storePassword(password);
           router.push(referrer || '/');
         }
@@ -58,6 +66,25 @@
       }
       ]]>
     </correct-password-handling>
+    <document-injection>
+      <![CDATA[
+      // Correct: Loading encrypted data at build time
+      import { loadEncryptedNotesFromFS } from "@/utils/loadNotesServer";
+      
+      Page.getInitialProps = async (ctx: DocumentContext) => {
+        const encryptedData = await loadEncryptedNotesFromFS();
+        const initialProps = await Document.getInitialProps(ctx);
+        return { ...initialProps, encryptedData };
+      }
+      
+      // Correct: Injecting data as a global variable
+      <script
+        dangerouslySetInnerHTML={{
+          __html: `window.__ENCRYPTED_NOTES_DATA__ = ${JSON.stringify(encryptedData)};`
+        }}
+      />
+      ]]>
+    </document-injection>
     <incorrect-practices>
       <![CDATA[
       // WRONG: Sending password to server
@@ -73,6 +100,12 @@
       export async function decryptNotesAtBuild(encryptedData) {
         // This would expose decrypted content at build time
       }
+      
+      // WRONG: Storing decrypted notes in localStorage
+      localStorage.setItem('decrypted_notes', JSON.stringify(notes));
+      
+      // WRONG: Loading decryption password in document
+      const decryptionKey = process.env.NOTES_DECRYPTION_PASSWORD;
       ]]>
     </incorrect-practices>
   </examples>
@@ -81,5 +114,7 @@
     <ref>CryptoJS:https://cryptojs.gitbook.io/docs/</ref>
     <ref>WebStorage:https://developer.mozilla.org/en-US/docs/Web/API/Web_Storage_API/Using_the_Web_Storage_API#security</ref>
     <ref>ClientSecurity:https://cheatsheetseries.owasp.org/cheatsheets/DOM_based_XSS_Prevention_Cheat_Sheet.html</ref>
+    <ref>ZustandSecurity:https://github.com/pmndrs/zustand/blob/main/docs/guides/how-to-reset-state.md</ref>
+    <ref>NextDocument:https://nextjs.org/docs/pages/building-your-application/routing/custom-document</ref>
   </references>
 </rule> 

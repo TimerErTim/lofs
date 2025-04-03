@@ -1,7 +1,7 @@
 <rule id="project-overview" type="core">
   <meta>
     <title>Project Overview</title>
-    <version>1.0</version>
+    <version>1.2</version>
     <scope>all</scope>
   </meta>
   
@@ -20,20 +20,22 @@
     <encryption>CryptoJS for AES encryption/decryption</encryption>
     <files>JSZip for packaging notes and images</files>
     <auth>Client-side authentication; Password validation via decryption success</auth>
+    <state>Zustand for decrypted notes caching and global state management</state>
     <deploy>GitHub Pages via GitHub Actions</deploy>
   </stack>
   
   <architecture>
     <auth-layer>Client-side password protection; Password stored in sessionStorage; Global AuthGuard component; Dedicated login page with redirects; Validation via successful decryption</auth-layer>
-    <data-management>Encrypted ZIP with notes/images; Notes as JSON with text and optional image refs; Client-side encryption/decryption only; No build-time decryption</data-management>
+    <data-management>Encrypted data embedded in HTML at build time via _document.tsx; Decrypted data cached in global state store; Notes as JSON with text and optional image refs; Client-side encryption/decryption only; No build-time decryption</data-management>
     <ui-components>Login form; Notes display with image support; Navigation between notes</ui-components>
-    <build>Static site generation (SSG); No secrets during build; Export to static HTML/CSS/JS</build>
+    <build>Static site generation (SSG); Encrypted data embedded in HTML; No secrets during build; Export to static HTML/CSS/JS</build>
+    <document-structure>Custom Next.js Document component; Injects encrypted data as global variable; Loads favicon and web manifests; German language setting</document-structure>
   </architecture>
   
   <security>Never store unencrypted notes in repo; Client-only decryption; Session expires when browser closes; Source notes directory excluded from git</security>
   
   <flow>
-    <user>Visit URL → If not authenticated, redirect to login → Enter password → Redirect back to original URL → Navigate between notes → Session lost when browser closes</user>
+    <user>Visit URL → If not authenticated, redirect to login → Enter password → Notes decrypted and cached in global state → Redirect back to original URL → Navigate between notes with instant rendering from cache → Session lost when browser closes</user>
     <data-update>Create notes locally → Run encrypt script → Commit encrypted data → GitHub Actions deploys</data-update>
   </flow>
   
@@ -41,20 +43,49 @@
     <user-flow>
       <![CDATA[
       1. User visits note URL (e.g., /notes/2023-04-01) → Redirected to login with referrer
-      2. User enters correct password → Notes decrypted in browser
+      2. User enters correct password → Notes decrypted in browser and cached in global state
       3. User redirected back to original note URL
-      4. User navigates between date-based notes
+      4. User navigates between date-based notes with instant rendering from global state
       5. Session persists until browser is closed
       6. User logs out or closes browser → Session cleared
       ]]>
     </user-flow>
+    <document-configuration>
+      <![CDATA[
+      // Custom Document component to inject encrypted data at build time
+      export default function Page({ encryptedData }: { encryptedData: string }) {
+        return (
+          <Html lang="de">
+            <Head>
+              <link rel="apple-touch-icon" sizes="180x180" href="/apple-touch-icon.png" />
+              <link rel="icon" type="image/png" sizes="32x32" href="/favicon-32x32.png" />
+              <link rel="icon" type="image/png" sizes="16x16" href="/favicon-16x16.png" />
+              <link rel="manifest" href="/site.webmanifest" />
+            </Head>
+            <body className="antialiased">
+              {/* Inject the encrypted data as a global variable */}
+              <script
+                dangerouslySetInnerHTML={{
+                  __html: `window.__ENCRYPTED_NOTES_DATA__ = ${JSON.stringify(encryptedData)};`
+                }}
+              />
+              <Main />
+              <NextScript />
+            </body>
+          </Html>
+        );
+      }
+      ]]>
+    </document-configuration>
   </examples>
   
   <references>
     <ref>NextJS:https://nextjs.org/docs</ref>
+    <ref>NextDocument:https://nextjs.org/docs/pages/building-your-application/routing/custom-document</ref>
     <ref>HeroUI:https://www.heroui.com/docs</ref>
     <ref>TailwindCSS:https://tailwindcss.com/docs</ref>
     <ref>GitHub-Actions:https://docs.github.com/en/actions</ref>
     <ref>CryptoJS:https://cryptojs.gitbook.io/docs/</ref>
+    <ref>Zustand:https://zustand-demo.pmnd.rs/</ref>
   </references>
 </rule> 

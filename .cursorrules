@@ -32,6 +32,7 @@ The following rules exist and should be referenced for related concerns:
 4. `.rules/ui-and-language.xml` - UI components and German language requirements
 5. `.rules/deployment.xml` - Deployment process and configuration
 6. `.rules/code-style.xml` - Code formatting and organization standards
+7. `.rules/head-and-document.xml` - Head and document structure standards
 
 Each rule file contains detailed guidelines in an information-dense format optimized for AI/LLM processing while maintaining human readability. When working on a specific part of the codebase, check the most relevant rule files first.
 
