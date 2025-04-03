@@ -86,12 +86,11 @@ export default function NotePage({ date }: NotePageProps) {
   // Format date for display
   const formatDate = (dateString: string) => {
     const date = new Date(dateString);
-    const options: Intl.DateTimeFormatOptions = { 
+    return date.toLocaleDateString('de-DE', { 
       year: 'numeric', 
       month: 'long', 
       day: 'numeric' 
-    };
-    return date.toLocaleDateString('de-DE', options);
+    });
   };
   
   return (
@@ -102,63 +101,78 @@ export default function NotePage({ date }: NotePageProps) {
       </Head>
       
       <div className="flex flex-col min-h-screen bg-gray-100 dark:bg-gray-900">
-        <header className="bg-white dark:bg-gray-800 shadow py-4">
+        <header className="bg-white dark:bg-gray-800 shadow py-4 z-10">
           <div className="container mx-auto px-4 flex justify-between items-center">
-            <h1 className="text-xl font-bold">Tägliche Liebesnotizen</h1>
-            <Button variant="ghost" onPress={handleBackToCalendar}>Zurück zum Kalender</Button>
+            <h1 className="text-xl font-bold text-gray-800 dark:text-gray-100">Tägliche Liebesnotizen</h1>
+            <Button variant="ghost" onPress={handleBackToCalendar} className="text-gray-700 dark:text-gray-300">Zurück zum Kalender</Button>
           </div>
         </header>
         
-        <main className="flex-1 container mx-auto px-4 py-8">
-          <div className="max-w-3xl mx-auto">
-            <Card className="h-full">
-              <CardHeader className="pb-0">
-                <h3 className="text-lg font-semibold">{formatDate(currentNote.date)}</h3>
-              </CardHeader>
-              <CardBody>
-                {currentNote.imageUrl && (
-                  <div className="mb-4">
-                    <img 
-                      src={currentNote.imageUrl} 
-                      alt="Notiz Bild" 
-                      className="w-full h-auto rounded-lg object-cover max-h-[400px]"
-                    />
-                  </div>
-                )}
-                <p className="whitespace-pre-line">{currentNote.text}</p>
-              </CardBody>
-              <CardFooter className="pt-0">
-                <p className="text-xs text-gray-500 dark:text-gray-400">Notiz #{currentNote.id}</p>
-              </CardFooter>
-            </Card>
-            
-            <div className="flex justify-between mt-8">
-              <Button 
-                onPress={handlePrevious}
-                isDisabled={notes.length <= 1}
-              >
-                Vorherige
-              </Button>
-              <div className="text-center">
-                {notes.length > 1 && (
-                  <span className="text-sm text-gray-500 dark:text-gray-400">
-                    {currentIndex + 1} von {notes.length}
-                  </span>
-                )}
+        <main className="flex-1 relative">
+          {/* Background Image */}
+          {currentNote.imageUrl && (
+            <div className="absolute inset-0 overflow-hidden">
+              <div className="absolute inset-0 bg-black/30 z-10" />
+              <img 
+                src={currentNote.imageUrl} 
+                alt="Hintergrundbild" 
+                className="w-full h-full object-cover"
+              />
+            </div>
+          )}
+          
+          {/* Navigation Chevrons */}
+          <Button 
+            onPress={handlePrevious}
+            isDisabled={notes.length <= 1}
+            className="absolute left-4 top-1/2 -translate-y-1/2 bg-white/80 dark:bg-gray-800/80 p-3 rounded-full shadow-lg z-20 hover:bg-white dark:hover:bg-gray-700"
+            aria-label="Vorherige Notiz"
+            variant="ghost"
+          >
+            <svg xmlns="http://www.w3.org/2000/svg" className="h-6 w-6 text-gray-800 dark:text-gray-100" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 19l-7-7 7-7" />
+            </svg>
+          </Button>
+          
+          <Button 
+            onPress={handleNext}
+            isDisabled={notes.length <= 1}
+            className="absolute right-4 top-1/2 -translate-y-1/2 bg-white/80 dark:bg-gray-800/80 p-3 rounded-full shadow-lg z-20 hover:bg-white dark:hover:bg-gray-700"
+            aria-label="Nächste Notiz"
+            variant="ghost"
+          >
+            <svg xmlns="http://www.w3.org/2000/svg" className="h-6 w-6 text-gray-800 dark:text-gray-100" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
+            </svg>
+          </Button>
+          
+          {/* Content */}
+          <div className="container mx-auto px-4 py-12 relative z-10">
+            <div className="max-w-3xl mx-auto">
+              <div className={`bg-white/90 dark:bg-gray-800/90 p-8 rounded-lg shadow-lg ${!currentNote.imageUrl ? 'mt-8' : ''}`}>
+                <h2 className="text-2xl font-bold mb-6 text-center text-gray-800 dark:text-gray-100">
+                  {formatDate(currentNote.date)}
+                </h2>
+                
+                <div className="mt-6">
+                  <p className="whitespace-pre-line text-lg text-gray-800 dark:text-gray-100">{currentNote.text}</p>
+                </div>
+                
+                <div className="mt-8 text-center text-sm text-gray-600 dark:text-gray-400">
+                  {notes.length > 1 && (
+                    <span>
+                      Notiz {currentIndex + 1} von {notes.length}
+                    </span>
+                  )}
+                </div>
               </div>
-              <Button 
-                onPress={handleNext}
-                isDisabled={notes.length <= 1}
-              >
-                Nächste
-              </Button>
             </div>
           </div>
         </main>
         
-        <footer className="bg-white dark:bg-gray-800 py-4 shadow-inner">
+        <footer className="bg-white dark:bg-gray-800 py-4 shadow-inner relative z-10">
           <div className="container mx-auto px-4 text-center">
-            <p className="text-sm text-gray-500 dark:text-gray-400">
+            <p className="text-sm text-gray-600 dark:text-gray-300">
               Mit Liebe, jeden Tag.
             </p>
           </div>
