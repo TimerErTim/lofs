@@ -19,32 +19,33 @@
     <styling>TailwindCSS v3.4.1</styling>
     <encryption>CryptoJS for AES encryption/decryption</encryption>
     <files>JSZip for packaging notes and images</files>
-    <auth>Client-side with SHA-256 password hashing</auth>
+    <auth>Client-side authentication; Password validation via decryption success</auth>
     <deploy>GitHub Pages via GitHub Actions</deploy>
   </stack>
   
   <architecture>
-    <auth-layer>Client-side password protection; Token-based auth in localStorage; SHA-256 hashing; Validation via successful decryption</auth-layer>
+    <auth-layer>Client-side password protection; Password stored in sessionStorage; Global AuthGuard component; Dedicated login page with redirects; Validation via successful decryption</auth-layer>
     <data-management>Encrypted ZIP with notes/images; Notes as JSON with text and optional image refs; Client-side encryption/decryption only; No build-time decryption</data-management>
     <ui-components>Login form; Notes display with image support; Navigation between notes</ui-components>
     <build>Static site generation (SSG); No secrets during build; Export to static HTML/CSS/JS</build>
   </architecture>
   
-  <security>Never store unencrypted notes in repo; Strong password hashing (SHA-256); Client-only decryption; Source notes directory excluded from git</security>
+  <security>Never store unencrypted notes in repo; Client-only decryption; Session expires when browser closes; Source notes directory excluded from git</security>
   
   <flow>
-    <user>Login → Decrypt notes client-side → Navigate between notes → Session persists 30 days</user>
+    <user>Visit URL → If not authenticated, redirect to login → Enter password → Redirect back to original URL → Navigate between notes → Session lost when browser closes</user>
     <data-update>Create notes locally → Run encrypt script → Commit encrypted data → GitHub Actions deploys</data-update>
   </flow>
   
   <examples>
     <user-flow>
       <![CDATA[
-      1. User visits site → Login form shown
+      1. User visits note URL (e.g., /notes/2023-04-01) → Redirected to login with referrer
       2. User enters correct password → Notes decrypted in browser
-      3. User navigates between date-based notes
-      4. Session persists for 30 days via localStorage token
-      5. User logs out → Session cleared
+      3. User redirected back to original note URL
+      4. User navigates between date-based notes
+      5. Session persists until browser is closed
+      6. User logs out or closes browser → Session cleared
       ]]>
     </user-flow>
   </examples>

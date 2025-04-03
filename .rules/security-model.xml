@@ -1,114 +1,7 @@
-# Security Model
-
-## Purpose
-
-This document outlines the security architecture and practices that must be followed to maintain the confidentiality and integrity of the Daily Notes of Love project.
-
-## Scope
-
-These security rules apply to all code, configuration, deployment processes, and development practices within the project.
-
-## Guidelines
-
-### Encryption at Rest
-
-1. **Note Content Security**
-   - All note content must be stored in an encrypted format in the repository
-   - AES encryption via CryptoJS is the standard encryption method
-   - Encryption password must never be committed to the repository
-   - The encrypted data should be stored in the `data/encrypted_notes.dat` file
-
-2. **Image Security**
-   - Images must be included in the encrypted ZIP archive
-   - No unencrypted images should be stored in the repository
-   - Images are extracted and converted to data URLs during client-side decryption
-
-### Authentication
-
-1. **Password Management**
-   - The website access password must never be stored in plain text
-   - Only SHA-256 hashes of passwords should be used for verification
-   - Password hashing occurs client-side using CryptoJS
-   - Password validation happens through successful decryption of the notes
-
-2. **Session Management**
-   - Authentication tokens are stored in localStorage
-   - Tokens include creation and expiry timestamps
-   - Default validity period is 30 days
-   - Hashed password is stored in localStorage for session duration
-   - Original password is stored securely with additional hashing for decryption
-
-### Client-Side Security
-
-1. **Decryption Process**
-   - Decryption occurs exclusively in the client browser
-   - Decryption password is never sent to any server
-   - The website doesn't need any server-side knowledge of the password
-
-2. **Password Storage**
-   - Passwords in localStorage use proper hashing
-   - Clear all password data on logout
-   - Never expose decryption methods to external scripts
-
-### Build-time vs. Runtime Security
-
-1. **Build-time Operations**
-   - No decryption occurs during build
-   - No secrets are needed during build
-   - Encrypted data is passed directly to the client
-
-2. **Runtime Operations**
-   - All decryption happens in the client browser
-   - Authentication uses client-side validation
-   - Notes and images are decrypted and displayed only after successful authentication
-
-## Examples
-
-### Correct Password Handling
-
-```typescript
-// Correct: Store hashed password in localStorage
-export function storeHashedPassword(password: string): void {
-  const hashedPassword = CryptoJS.SHA256(password).toString();
-  localStorage.setItem('hashed_password_key', hashedPassword);
-}
-
-// Correct: Client-side decryption
-const decryptedData = await decryptNotes(encryptedData, password);
-if (decryptedData) {
-  // Authentication successful
-  setNotes(decryptedData.notes);
-}
-```
-
-### Incorrect Security Practices (AVOID)
-
-```javascript
-// WRONG: Sending password to server
-fetch('/api/validate-password', {
-  method: 'POST',
-  body: JSON.stringify({ password })
-});
-
-// WRONG: Storing unencrypted password
-localStorage.setItem('user_password', password);
-
-// WRONG: Decrypting notes at build time
-export async function decryptNotesAtBuild(encryptedData) {
-  // This would expose decrypted content at build time
-}
-```
-
-## References
-
-- [CryptoJS Documentation](https://cryptojs.gitbook.io/docs/)
-- [Web Storage Security](https://developer.mozilla.org/en-US/docs/Web/API/Web_Storage_API/Using_the_Web_Storage_API#security)
-- [Client-Side Security Best Practices](https://cheatsheetseries.owasp.org/cheatsheets/DOM_based_XSS_Prevention_Cheat_Sheet.html)
-
 <rule id="security-model" type="critical">
   <meta>
     <title>Security Model</title>
-    <version>1.0</version>
+    <version>1.1</version>
     <scope>files:*.tsx,*.jsx,*.ts,*.js,*.yml,next.config.*</scope>
   </meta>
   
@@ -118,13 +11,13 @@ export async function decryptNotesAtBuild(encryptedData) {
   </encryption-at-rest>
   
   <authentication>
-    <passwords>No plaintext; SHA-256 hash only; Client-side hashing; Validation via successful decryption</passwords>
-    <sessions>Tokens in localStorage; Include creation/expiry timestamps; 30-day validity; Store hashed password; Extra hashing for decryption password</sessions>
+    <passwords>No plaintext; Client-side validation; Validation via successful decryption; Dedicated login page</passwords>
+    <sessions>Password in sessionStorage; No tokens needed; Expires when browser closes; AuthGuard for app-wide protection; URL referrer preservation</sessions>
   </authentication>
   
   <client-side>
     <decryption>Browser-only; Never send password to server; No server-side password knowledge</decryption>
-    <storage>Proper hashing for localStorage; Clear on logout; No exposure to external scripts</storage>
+    <storage>sessionStorage for passwords; Clear on logout; No exposure to external scripts</storage>
   </client-side>
   
   <build-vs-runtime>
@@ -134,7 +27,7 @@ export async function decryptNotesAtBuild(encryptedData) {
   
   <security-fails>
     <fail type="critical">Sending password to server</fail>
-    <fail type="critical">Storing unencrypted password</fail>
+    <fail type="critical">Storing unencrypted password in localStorage (persistent)</fail>
     <fail type="critical">Decrypting notes at build time</fail>
     <fail type="critical">Storing unencrypted notes in the repository</fail>
   </security-fails>
@@ -142,17 +35,26 @@ export async function decryptNotesAtBuild(encryptedData) {
   <examples>
     <correct-password-handling>
       <![CDATA[
-      // Correct: Store hashed password in localStorage
-      export function storeHashedPassword(password: string): void {
-        const hashedPassword = CryptoJS.SHA256(password).toString();
-        localStorage.setItem('hashed_password_key', hashedPassword);
+      // Correct: Store password in sessionStorage
+      export function storePassword(password: string): void {
+        sessionStorage.setItem('daily_lofs_password', password);
       }
 
-      // Correct: Client-side decryption
-      const decryptedData = await decryptNotes(encryptedData, password);
-      if (decryptedData) {
-        // Authentication successful
-        setNotes(decryptedData.notes);
+      // Correct: Simple authentication check
+      export function isAuthenticated(): boolean {
+        if (typeof window === 'undefined') return false;
+        return getStoredPassword() !== null;
+      }
+
+      // Correct: Client-side decryption with redirect
+      try {
+        const decryptedData = await decryptNotes(encryptedData, password);
+        if (decryptedData) {
+          storePassword(password);
+          router.push(referrer || '/');
+        }
+      } catch (error) {
+        console.error('Error:', error);
       }
       ]]>
     </correct-password-handling>
@@ -164,7 +66,7 @@ export async function decryptNotesAtBuild(encryptedData) {
         body: JSON.stringify({ password })
       });
 
-      // WRONG: Storing unencrypted password
+      // WRONG: Storing unencrypted password in localStorage
       localStorage.setItem('user_password', password);
 
       // WRONG: Decrypting notes at build time
