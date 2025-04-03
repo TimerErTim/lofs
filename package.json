@@ -6,7 +6,7 @@
     "dev": "next dev --turbo",
     "build": "next build",
     "start": "next start",
-    "export": "next export",
+    "prod": "next build && npx serve out/",
     "encrypt": "node scripts/encrypt.js",
     "lint": "next lint"
   },
