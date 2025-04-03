@@ -1,48 +1,19 @@
 import { useState, useEffect } from 'react';
-import { GetStaticProps } from 'next';
 import Head from 'next/head';
+import { logout } from '@/utils/auth';
+import useNotesStore from '@/store/notesStore';
 import CalendarView from '@/components/CalendarView';
-import { getStoredPassword, logout } from '@/utils/auth';
-import { loadEncryptedNotes } from '@/utils/loadNotes';
-import { decryptNotes } from '@/utils/decryptNotes';
-import { Note } from '@/types/notes';
 
-interface HomeProps {
-  encryptedData: string;
-}
-
-export default function Home({ encryptedData }: HomeProps) {
-  const [loading, setLoading] = useState(true);
-  const [notes, setNotes] = useState<Note[]>([]);
-
-  useEffect(() => {
-    // Decrypt notes with stored password - AuthGuard ensures we have a password
-    const loadNotes = async () => {
-      const storedPassword = getStoredPassword();
-      
-      if (storedPassword) {
-        try {
-          const decryptedData = await decryptNotes(encryptedData, storedPassword);
-          if (decryptedData) {
-            setNotes(decryptedData.notes);
-          }
-        } catch (error) {
-          console.error('Error decrypting with stored password:', error);
-        }
-      }
-      
-      setLoading(false);
-    };
-    
-    loadNotes();
-  }, [encryptedData]);
+export default function Home() {
+  const { notes, isLoaded, resetNotes } = useNotesStore();
 
   const handleLogout = () => {
+    resetNotes();
     logout();
     // The page will be reloaded/redirected by AuthGuard
   };
 
-  if (loading) {
+  if (!isLoaded) {
     return (
       <div className="flex items-center justify-center min-h-screen bg-gray-100 dark:bg-gray-900">
         <p>Wird geladen...</p>
@@ -63,23 +34,3 @@ export default function Home({ encryptedData }: HomeProps) {
     </>
   );
 }
-
-export const getStaticProps: GetStaticProps = async () => {
-  try {
-    // Load encrypted notes without decryption
-    const encryptedData = await loadEncryptedNotes();
-    
-    return {
-      props: {
-        encryptedData,
-      },
-    };
-  } catch (error) {
-    console.error('Error in getStaticProps:', error);
-    return {
-      props: {
-        encryptedData: '',
-      },
-    };
-  }
-};
