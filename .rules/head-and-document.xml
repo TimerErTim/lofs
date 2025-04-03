@@ -1,0 +1,107 @@
+<rule id="head-and-document" type="standard">
+  <meta>
+    <title>Head and Document Structure</title>
+    <version>1.0</version>
+    <scope>files:src/pages/_document.tsx,src/pages/_app.tsx,src/pages/*.tsx</scope>
+  </meta>
+  
+  <document-structure>
+    <next-document>Custom Document component required; Inject encrypted data at build time; Set language to German; Include favicon and manifest links</next-document>
+    <head-configuration>Consistent title structure; Proper viewport settings; Meta tags for description when appropriate</head-configuration>
+    <styling>Antialiased font rendering; Consistent font family; Proper text size hierarchy</styling>
+  </document-structure>
+  
+  <data-embedding>
+    <encrypted-data>Load from filesystem at build time via getInitialProps; Inject as global variable; Use dangerouslySetInnerHTML with JSON.stringify</encrypted-data>
+    <global-variable>Type-defined in global namespace; Accessed through memoized hook; No direct manipulation</global-variable>
+    <performance>Place script before Main component; Ensure it's outside hydration boundaries; Data immediately available on page load</performance>
+  </data-embedding>
+  
+  <favicon-requirements>
+    <formats>Apple touch icon (180x180); PNG icons (32x32, 16x16); Web manifest for PWA support</formats>
+    <placement>Define in _document.tsx for site-wide availability; Use standard locations in /public directory</placement>
+    <consistency>Use consistent branding across all icon sizes; Follow PWA best practices</consistency>
+  </favicon-requirements>
+  
+  <page-heads>
+    <titles>Use "Tägliche Liebesnotizen" for main page; Include note date in note detail pages; German language formatting</titles>
+    <metadata>Viewport settings required on all pages; Description meta tags where appropriate; No keywords needed</metadata>
+    <consistency>Consistent header structure across pages; Same format for title prefixes/suffixes</consistency>
+  </page-heads>
+  
+  <examples>
+    <document-tsx>
+      <![CDATA[
+      // Custom Document component with encrypted data and favicon configuration
+      import { NextPageContext } from "next";
+      import Document, { Html, Head, Main, NextScript, DocumentContext } from "next/document";
+      import { loadEncryptedNotesFromFS } from "@/utils/loadNotesServer";
+      
+      // Add a type declaration for the global variable
+      declare global {
+        interface Window {
+          __ENCRYPTED_NOTES_DATA__: string;
+        }
+      }
+      
+      Page.getInitialProps = async (ctx: DocumentContext) => {
+        const encryptedData = await loadEncryptedNotesFromFS();
+        const initialProps = await Document.getInitialProps(ctx);
+        return { ...initialProps, encryptedData };
+      }
+      
+      export default function Page({ encryptedData }: { encryptedData: string }) {
+        return (
+          <Html lang="de">
+            <Head>
+              <link rel="apple-touch-icon" sizes="180x180" href="/apple-touch-icon.png" />
+              <link rel="icon" type="image/png" sizes="32x32" href="/favicon-32x32.png" />
+              <link rel="icon" type="image/png" sizes="16x16" href="/favicon-16x16.png" />
+              <link rel="manifest" href="/site.webmanifest" />
+            </Head>
+            <body className="antialiased">
+              {/* Inject the encrypted data as a global variable */}
+              <script
+                dangerouslySetInnerHTML={{
+                  __html: `window.__ENCRYPTED_NOTES_DATA__ = ${JSON.stringify(encryptedData)};`
+                }}
+              />
+      
+              <Main />
+              <NextScript />
+            </body>
+          </Html>
+        );
+      }
+      ]]>
+    </document-tsx>
+    <page-head>
+      <![CDATA[
+      // Proper page head configuration in a standard page
+      export default function Home() {
+        const { notes, isLoaded, resetNotes } = useNotesStore();
+      
+        // ... component logic ...
+      
+        return (
+          <>
+            <Head>
+              <title>Tägliche Liebesnotizen</title>
+              <meta name="viewport" content="width=device-width, initial-scale=1" />
+            </Head>
+      
+            <CalendarView notes={notes} onLogout={handleLogout} />
+          </>
+        );
+      }
+      ]]>
+    </page-head>
+  </examples>
+  
+  <references>
+    <ref>NextDocument:https://nextjs.org/docs/pages/building-your-application/routing/custom-document</ref>
+    <ref>NextHead:https://nextjs.org/docs/pages/api-reference/components/head</ref>
+    <ref>Favicon:https://evilmartians.com/chronicles/how-to-favicon-in-2021-six-files-that-fit-most-needs</ref>
+    <ref>WebManifest:https://developer.mozilla.org/en-US/docs/Web/Manifest</ref>
+  </references>
+</rule> 
