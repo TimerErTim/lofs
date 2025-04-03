@@ -2,7 +2,7 @@ import { useState, useEffect } from 'react';
 import { GetStaticProps } from 'next';
 import Head from 'next/head';
 import CalendarView from '@/components/CalendarView';
-import { isAuthenticated, getStoredPassword } from '@/utils/auth';
+import { getStoredPassword, logout } from '@/utils/auth';
 import { loadEncryptedNotes } from '@/utils/loadNotes';
 import { decryptNotes } from '@/utils/decryptNotes';
 import { Note } from '@/types/notes';
@@ -12,60 +12,34 @@ interface HomeProps {
 }
 
 export default function Home({ encryptedData }: HomeProps) {
-  const [authenticated, setAuthenticated] = useState(false);
   const [loading, setLoading] = useState(true);
   const [notes, setNotes] = useState<Note[]>([]);
 
   useEffect(() => {
-    // Check authentication status
-    const checkAuth = async () => {
-      const isAuth = isAuthenticated();
+    // Decrypt notes with stored password - AuthGuard ensures we have a password
+    const loadNotes = async () => {
+      const storedPassword = getStoredPassword();
       
-      if (isAuth) {
-        // If authenticated, try to decrypt notes with stored password
-        const storedPassword = getStoredPassword();
-        if (storedPassword) {
-          try {
-            const decryptedData = await decryptNotes(encryptedData, storedPassword);
-            if (decryptedData) {
-              setNotes(decryptedData.notes);
-              setAuthenticated(true);
-            } else {
-              // Decryption failed, clear authentication
-              setAuthenticated(false);
-            }
-          } catch (error) {
-            console.error('Error decrypting with stored password:', error);
-            setAuthenticated(false);
+      if (storedPassword) {
+        try {
+          const decryptedData = await decryptNotes(encryptedData, storedPassword);
+          if (decryptedData) {
+            setNotes(decryptedData.notes);
           }
-        } else {
-          setAuthenticated(false);
+        } catch (error) {
+          console.error('Error decrypting with stored password:', error);
         }
-      } else {
-        setAuthenticated(false);
       }
       
       setLoading(false);
     };
     
-    checkAuth();
+    loadNotes();
   }, [encryptedData]);
 
-  const handleLoginSuccess = async (password: string) => {
-    try {
-      const decryptedData = await decryptNotes(encryptedData, password);
-      if (decryptedData) {
-        setNotes(decryptedData.notes);
-        setAuthenticated(true);
-      }
-    } catch (error) {
-      console.error('Error in login decryption:', error);
-    }
-  };
-
   const handleLogout = () => {
-    setAuthenticated(false);
-    setNotes([]);
+    logout();
+    // The page will be reloaded/redirected by AuthGuard
   };
 
   if (loading) {
@@ -85,11 +59,7 @@ export default function Home({ encryptedData }: HomeProps) {
         <link rel="icon" href="/favicon.ico" />
       </Head>
 
-      {authenticated ? (
-        <CalendarView notes={notes} onLogout={handleLogout} />
-      ) : (
-        <LoginForm encryptedData={encryptedData} onLoginSuccess={handleLoginSuccess} />
-      )}
+      <CalendarView notes={notes} onLogout={handleLogout} />
     </>
   );
 }
