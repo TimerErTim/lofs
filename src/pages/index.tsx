@@ -3,12 +3,12 @@ import Head from 'next/head';
 import { logout } from '@/utils/auth';
 import useNotesStore from '@/store/notesStore';
 import CalendarView from '@/components/CalendarView';
+import Layout from '@/components/Layout';
 
 export default function Home() {
-  const { notes, isLoaded, resetNotes } = useNotesStore();
+  const { notes, isLoaded } = useNotesStore();
 
   const handleLogout = () => {
-    resetNotes();
     logout();
     // The page will be reloaded/redirected by AuthGuard
   };
@@ -24,11 +24,17 @@ export default function Home() {
   return (
     <>
       <Head>
-        <title>Tägliche Liebesnotizen</title>
+        <title>Lofs</title>
         <meta name="viewport" content="width=device-width, initial-scale=1" />
       </Head>
 
-      <CalendarView notes={notes} onLogout={handleLogout} />
+      <Layout headerButton={{
+        label: 'Abmelden',
+        onClick: handleLogout,
+        variant: 'ghost'
+      }}>
+        <CalendarView notes={notes} />
+      </Layout>
     </>
   );
 }
