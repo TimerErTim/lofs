@@ -1,5 +1,5 @@
 import { create } from 'zustand';
-import { Note, NotesData } from '@/types/notes';
+import { Note } from '@/types/notes';
 import { decryptNotes } from '@/utils/decryptNotes';
 
 interface NotesState {
@@ -42,7 +42,7 @@ const useNotesStore = create<NotesState>((set, get) => ({
       }
       
       set({ 
-        notes: decryptedData.notes,
+        notes: decryptedData,
         isLoaded: true,
         isLoading: false,
         error: null

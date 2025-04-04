@@ -70,7 +70,6 @@ export default function CalendarView({ notes, onLogout }: CalendarViewProps) {
           <h2 className="text-2xl font-semibold mb-6 text-center text-gray-800 dark:text-gray-100">Wähle ein Datum</h2>
           
           <Calendar
-            value={date}
             onChange={handleDateChange}
             isDateUnavailable={isDateUnavailable}
             minValue={minDate}

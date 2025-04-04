@@ -1,5 +1,5 @@
 import { decryptNotes } from './decryptNotes';
-import { NotesData } from '@/types/notes';
+import { Note } from '@/types/notes';
 import fs from 'fs';
 import path from 'path';
 
@@ -32,17 +32,17 @@ export async function decryptNotesAtBuildTime(): Promise<string[]> {
     
     // Use the existing decryptNotes function
     try {
-      const notesData = await decryptNotes(encryptedData, password);
+      const notes = await decryptNotes(encryptedData, password);
       
-      if (!notesData) {
+      if (!notes) {
         console.warn('Failed to decrypt notes data at build time - check password');
         return [];
       }
       
-      console.log(`Successfully decrypted ${notesData.notes.length} notes`);
+      console.log(`Successfully decrypted ${notes.length} notes`);
       
       // Extract just the dates for static path generation
-      const noteDates = notesData.notes.map(note => {
+      const noteDates = notes.map(note => {
         const date = new Date(note.date);
         return date.toISOString().split('T')[0]; // Format as YYYY-MM-DD
       });

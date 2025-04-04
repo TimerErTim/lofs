@@ -1,6 +1,6 @@
 import CryptoJS, { enc } from 'crypto-js';
 import JSZip from 'jszip';
-import { Note, NotesData } from '@/types/notes';
+import { Note } from '@/types/notes';
 
 /**
  * Decrypts and extracts notes from an encrypted zip file on the client side
@@ -11,7 +11,7 @@ import { Note, NotesData } from '@/types/notes';
 export async function decryptNotes(
   encryptedBase64: string,
   password: string
-): Promise<NotesData | null> {
+): Promise<Note[] | null> {
   // Decrypt the data using the password
   let decryptedBase64;
   try {
@@ -52,7 +52,7 @@ export async function decryptNotes(
 
   // Parse the notes data
   const notesContent = await notesFile.async('string');
-  const notesData: NotesData = JSON.parse(notesContent);
+  const notesData: { notes: Note[] } = JSON.parse(notesContent);
 
   // Process image paths
   for (const note of notesData.notes) {
@@ -80,5 +80,5 @@ export async function decryptNotes(
   // Sort notes by date (newest first)
   notesData.notes.sort((a, b) => new Date(b.date).getTime() - new Date(a.date).getTime());
 
-  return notesData;
+  return notesData.notes;
 }

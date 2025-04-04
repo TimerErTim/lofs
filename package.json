@@ -8,7 +8,8 @@
     "start": "next start",
     "prod": "next build && npx serve out/",
     "build:notes": "node scripts/encrypt.js",
-    "lint": "next lint"
+    "lint": "next lint",
+    "test:ts": "tsc --noEmit"
   },
   "dependencies": {
     "@heroui/react": "^2.7.5",
