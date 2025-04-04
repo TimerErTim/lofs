@@ -74,15 +74,14 @@ export default function LoginPage() {
         <meta name="viewport" content="width=device-width, initial-scale=1" />
       </Head>
 
-      <div className="flex items-center justify-center min-h-screen bg-gray-100 dark:bg-gray-900">
-        <div className="w-full max-w-md p-8 bg-white dark:bg-gray-800 rounded-lg shadow-md">
-          <h1 className="text-2xl font-bold mb-6 text-center text-gray-800 dark:text-gray-100">Login</h1>
-
-
+      <div className="flex items-center justify-center min-h-screen bg-gray-100 dark:bg-gray-900 px-4 sm:px-6">
+        <div className="w-full max-w-md p-6 sm:p-8 bg-white dark:bg-gray-800 rounded-lg shadow-md">
+          <h1 className="text-xl sm:text-2xl font-bold mb-4 sm:mb-6 text-center text-gray-800 dark:text-gray-100">Login</h1>
+          
           <form onSubmit={handleSubmit}>
-            <div className="mb-4">
+            <div className="mb-4 sm:mb-6">
               {error && (
-                <div className="mb-4 text-red-600 dark:text-red-400 text-sm text-center font-medium">
+                <div className="mb-3 sm:mb-4 text-red-600 dark:text-red-400 text-xs sm:text-sm text-center font-medium">
                   {error}
                 </div>
               )}
@@ -93,16 +92,15 @@ export default function LoginPage() {
                 onChange={(e) => setPassword(e.target.value)}
                 placeholder="Passwort eingeben"
                 isRequired
-                className="w-full"
+                fullWidth
                 autoFocus
               />
             </div>
 
-
             <Button
               type="submit"
               isLoading={isCheckInProgress}
-              className="w-full"
+              fullWidth
             >
               Anmelden
             </Button>

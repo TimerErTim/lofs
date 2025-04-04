@@ -2,12 +2,13 @@ import { useState, useEffect } from 'react';
 import { useRouter } from 'next/router';
 import Head from 'next/head';
 import { GetStaticProps, GetStaticPaths } from 'next';
-import { Button, Card, CardHeader, CardBody, CardFooter } from '@heroui/react';
+import { Button } from '@heroui/react';
 import { format } from 'date-fns';
 import { de } from 'date-fns/locale';
 import { decryptNotesAtBuildTime } from '@/utils/serverDecrypt';
 import useNotesStore from '@/store/notesStore';
 import { Note } from '@/types/notes';
+import Layout from '@/components/Layout';
 
 interface NotePageProps {
   date: string;
@@ -100,84 +101,62 @@ export default function NotePage({ date }: NotePageProps) {
         <meta name="viewport" content="width=device-width, initial-scale=1" />
       </Head>
       
-      <div className="flex flex-col min-h-screen bg-gray-100 dark:bg-gray-900">
-        <header className="bg-white dark:bg-gray-800 shadow py-4 z-10">
-          <div className="container mx-auto px-4 flex justify-between items-center">
-            <h1 className="text-xl font-bold text-gray-800 dark:text-gray-100">Tägliche Liebesnotizen</h1>
-            <Button variant="ghost" onPress={handleBackToCalendar} className="text-gray-700 dark:text-gray-300">Zurück zum Kalender</Button>
-          </div>
-        </header>
+      <Layout 
+        headerButton={{
+          label: 'Zum Kalender',
+          onClick: handleBackToCalendar,
+          variant: 'ghost'
+        }}
+        backgroundImage={currentNote.imageUrl}
+      >
+        {/* Navigation Chevrons */}
+        <Button 
+          onPress={handlePrevious}
+          isDisabled={notes.length <= 1}
+          className="absolute left-4 top-1/2 -translate-y-1/2 bg-white/80 dark:bg-gray-800/80 p-3 rounded-full shadow-lg z-20 hover:bg-white dark:hover:bg-gray-700"
+          aria-label="Vorherige Notiz"
+          variant="ghost"
+        >
+          <svg xmlns="http://www.w3.org/2000/svg" className="h-6 w-6 text-gray-800 dark:text-gray-100" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 19l-7-7 7-7" />
+          </svg>
+        </Button>
         
-        <main className="flex-1 relative">
-          {/* Background Image */}
-          {currentNote.imageUrl && (
-            <div className="absolute inset-0 overflow-hidden">
-              <div className="absolute inset-0 bg-black/30 z-10" />
-              <img 
-                src={currentNote.imageUrl} 
-                alt="Hintergrundbild" 
-                className="w-full h-full object-cover"
-              />
-            </div>
-          )}
-          
-          {/* Navigation Chevrons */}
-          <Button 
-            onPress={handlePrevious}
-            isDisabled={notes.length <= 1}
-            className="absolute left-4 top-1/2 -translate-y-1/2 bg-white/80 dark:bg-gray-800/80 p-3 rounded-full shadow-lg z-20 hover:bg-white dark:hover:bg-gray-700"
-            aria-label="Vorherige Notiz"
-            variant="ghost"
-          >
-            <svg xmlns="http://www.w3.org/2000/svg" className="h-6 w-6 text-gray-800 dark:text-gray-100" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 19l-7-7 7-7" />
-            </svg>
-          </Button>
-          
-          <Button 
-            onPress={handleNext}
-            isDisabled={notes.length <= 1}
-            className="absolute right-4 top-1/2 -translate-y-1/2 bg-white/80 dark:bg-gray-800/80 p-3 rounded-full shadow-lg z-20 hover:bg-white dark:hover:bg-gray-700"
-            aria-label="Nächste Notiz"
-            variant="ghost"
-          >
-            <svg xmlns="http://www.w3.org/2000/svg" className="h-6 w-6 text-gray-800 dark:text-gray-100" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
-            </svg>
-          </Button>
-          
-          {/* Content */}
-          <div className="container mx-auto px-4 py-12 relative z-10">
-            <div className="max-w-3xl mx-auto">
-              <div className={`bg-white/90 dark:bg-gray-800/90 p-8 rounded-lg shadow-lg ${!currentNote.imageUrl ? 'mt-8' : ''}`}>
-                <h2 className="text-2xl font-bold mb-6 text-center text-gray-800 dark:text-gray-100">
-                  {formatDate(currentNote.date)}
-                </h2>
-                
-                <div className="mt-6">
-                  <p className="whitespace-pre-line text-lg text-gray-800 dark:text-gray-100">{currentNote.text}</p>
-                </div>
-                
-                <div className="mt-8 text-center text-sm text-gray-600 dark:text-gray-400">
-                  {notes.length > 1 && (
-                    <span>
-                      Notiz {currentIndex + 1} von {notes.length}
-                    </span>
-                  )}
-                </div>
+        <Button 
+          onPress={handleNext}
+          isDisabled={notes.length <= 1}
+          className="absolute right-4 top-1/2 -translate-y-1/2 bg-white/80 dark:bg-gray-800/80 p-3 rounded-full shadow-lg z-20 hover:bg-white dark:hover:bg-gray-700"
+          aria-label="Nächste Notiz"
+          variant="ghost"
+        >
+          <svg xmlns="http://www.w3.org/2000/svg" className="h-6 w-6 text-gray-800 dark:text-gray-100" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
+          </svg>
+        </Button>
+        
+        {/* Content */}
+        <div className="container mx-auto px-4 py-12 relative z-10">
+          <div className="max-w-3xl mx-auto">
+            <div className={`bg-white/90 dark:bg-gray-800/90 p-8 rounded-lg shadow-lg ${!currentNote.imageUrl ? 'mt-8' : ''}`}>
+              <h2 className="text-2xl font-bold mb-6 text-center text-gray-800 dark:text-gray-100">
+                {formatDate(currentNote.date)}
+              </h2>
+              
+              <div className="mt-6">
+                <p className="whitespace-pre-line text-lg text-gray-800 dark:text-gray-100">{currentNote.text}</p>
+              </div>
+              
+              <div className="mt-8 text-center text-sm text-gray-600 dark:text-gray-400">
+                {notes.length > 1 && (
+                  <span>
+                    Notiz {currentIndex + 1} von {notes.length}
+                  </span>
+                )}
               </div>
             </div>
           </div>
-        </main>
-        
-        <footer className="bg-white dark:bg-gray-800 py-4 shadow-inner relative z-10">
-          <div className="container mx-auto px-4 text-center">
-            <p className="text-sm text-gray-600 dark:text-gray-300">
-              Mit Liebe, jeden Tag.
-            </p>
-          </div>
-        </footer>
-      </div>
+        </div>
+      </Layout>
     </>
   );
 }
