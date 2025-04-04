@@ -81,6 +81,12 @@ export default function LoginPage() {
 
           <form onSubmit={handleSubmit}>
             <div className="mb-4">
+              {error && (
+                <div className="mb-4 text-red-600 dark:text-red-400 text-sm text-center font-medium">
+                  {error}
+                </div>
+              )}
+              
               <Input
                 type="password"
                 value={password}
@@ -92,11 +98,6 @@ export default function LoginPage() {
               />
             </div>
 
-            {error && (
-              <div className="mb-4 text-red-600 dark:text-red-400 text-sm text-center font-medium">
-                {error}
-              </div>
-            )}
 
             <Button
               type="submit"
