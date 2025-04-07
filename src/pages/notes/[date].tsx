@@ -23,6 +23,7 @@ export default function NotePage({ date }: NotePageProps) {
   const [currentIndex, setCurrentIndex] = useState(-1);
   
   useEffect(() => {
+    console.log('notes', notes);
     // Notes are already loaded by AuthGuard in global state
     if (isLoaded && date && notes.length > 0) {
       // Find the note by date
@@ -97,7 +98,7 @@ export default function NotePage({ date }: NotePageProps) {
   return (
     <>
       <Head>
-        <title>Notiz - {formatDate(currentNote.date)} | Lofs</title>
+        <title>{formatDate(currentNote.date)} | Lofs</title>
         <meta name="viewport" content="width=device-width, initial-scale=1" />
       </Head>
       
