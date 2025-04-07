@@ -6,7 +6,11 @@ import AuthGuard from "@/components/AuthGuard";
 
 export default function App({ Component, pageProps }: AppProps) {
   return (
-    <ThemeProvider attribute="class" defaultTheme="light">
+    <ThemeProvider 
+      attribute="class" 
+      defaultTheme="system"
+      enableSystem={true}
+    >
       <HeroUIProvider locale="de-DE">
         <AuthGuard>
           <Component {...pageProps} />

@@ -14,23 +14,23 @@ const publicPaths = ['/login'];
 export default function AuthGuard({ children }: AuthGuardProps) {
   const router = useRouter();
   const [authorized, setAuthorized] = useState(false);
-  const [loadingNotes, setLoadingNotes] = useState(true);
   
   // Get store functions and state
-  const loadNotes = useNotesStore(state => state.storeEncryptedNotes);
+  const storeEncryptedNotes = useNotesStore(state => state.storeEncryptedNotes);
   const resetNotes = useNotesStore(state => state.resetNotes);
   const isLoaded = useNotesStore(state => state.isLoaded);
   
-  // Get encrypted data from memoized hook
+  // Get encrypted data from embedded in window
   const encryptedData = loadEncryptedNotesFromWindow();
 
-  // Load notes once when authenticated
+  // Try to load notes using the stored password
   useEffect(() => {
-    const initializeNotes = async () => {
-      // Skip for public paths or when still loading data
-      if (publicPaths.includes(router.pathname) || !authorized) {
-        setLoadingNotes(false);
-        return;
+
+    const checkAuth = async () => {
+       // Skip for public paths
+       if (publicPaths.includes(router.pathname)) {
+        setAuthorized(true);
+        return true;
       }
 
       // Only load if not already loaded
@@ -39,74 +39,39 @@ export default function AuthGuard({ children }: AuthGuardProps) {
         
         if (password) {
           try {
-            const success = await loadNotes(encryptedData, password);
+            const success = await storeEncryptedNotes(encryptedData, password);
             
             if (!success) {
               // Decryption failed with stored password - invalid auth
-              setAuthorized(false);
-              const currentPath = router.asPath;
-              router.push(`/login?referrer=${encodeURIComponent(currentPath)}`);
+              return false;
             }
           } catch (error) {
             console.error('Error loading notes in AuthGuard:', error);
             // Authentication failed - redirect to login
-            setAuthorized(false);
-            const currentPath = router.asPath;
-            router.push(`/login?referrer=${encodeURIComponent(currentPath)}`);
+            return false;
           }
         } else {
           // No password - auth failed
-          setAuthorized(false);
-          const currentPath = router.asPath;
-          router.push(`/login?referrer=${encodeURIComponent(currentPath)}`);
+          return false;
         }
       }
       
-      setLoadingNotes(false);
-    };
-
-    if (authorized) {
-      initializeNotes();
+      // If we get here, we're authorized
+      return true;
     }
-  }, [authorized, encryptedData, isLoaded, loadNotes, resetNotes, router]);
 
-  useEffect(() => {
-    // Verify authentication on route change
-    const authCheck = () => {
-      // Skip auth check for public paths
-      if (publicPaths.includes(router.pathname)) {
-        setAuthorized(true);
-        return;
-      }
-
-      // Check if user is authenticated
-      const auth = isAuthenticated();
-      
-      if (!auth) {
-        resetNotes(); // Clear notes state on auth failure
-        setAuthorized(false);
-        // Redirect to login with referrer path
+    checkAuth().then(isAuthorized => {
+      if (!isAuthorized) {
         const currentPath = router.asPath;
         router.push(`/login?referrer=${encodeURIComponent(currentPath)}`);
       } else {
         setAuthorized(true);
       }
-    };
+    });
+  }, [encryptedData, isLoaded, storeEncryptedNotes, resetNotes, router]);
 
-    // Check authentication status
-    authCheck();
-
-    // Add router event listener for route changes
-    router.events.on('routeChangeComplete', authCheck);
-
-    // Cleanup the event listener on component unmount
-    return () => {
-      router.events.off('routeChangeComplete', authCheck);
-    };
-  }, [router, resetNotes]);
-
-  // Show nothing while loading or unauthorized
-  if (!authorized || loadingNotes) {
+  // Show nothing while unauthorized
+  if (!authorized) {
     return null;
   }
 
