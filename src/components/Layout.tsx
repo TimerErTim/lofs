@@ -55,7 +55,7 @@ export default function Layout({
       <footer className="bg-white dark:bg-gray-800 py-3 sm:py-4 shadow-inner relative z-10">
         <div className="container mx-auto px-3 sm:px-4 text-center">
           <p className="text-xs sm:text-sm text-gray-600 dark:text-gray-300">
-            Mit Liebe, jeden Tag.
+            Für dich jeden Tag.
           </p>
         </div>
       </footer>
