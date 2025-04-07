@@ -77,8 +77,8 @@ export async function decryptNotes(
     }
   }
 
-  // Sort notes by date (newest first)
-  notesData.notes.sort((a, b) => new Date(b.date).getTime() - new Date(a.date).getTime());
+  // Sort notes by date (oldest first)
+  notesData.notes.sort((a, b) => new Date(a.date).getTime() - new Date(b.date).getTime());
 
   return notesData.notes;
 }
