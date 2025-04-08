@@ -8,8 +8,8 @@ export default function App({ Component, pageProps }: AppProps) {
   return (
     <ThemeProvider 
       attribute="class" 
-      defaultTheme="system"
-      enableSystem={true}
+      defaultTheme="light"
+      //enableSystem={true}
     >
       <HeroUIProvider locale="de-DE">
         <AuthGuard>
