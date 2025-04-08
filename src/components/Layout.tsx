@@ -39,17 +39,16 @@ export default function Layout({
 
       <main className="flex-1 relative">
         {backgroundImage && (
-          <div className="absolute inset-0 overflow-hidden">
-            <div className="absolute inset-0 bg-black/30 z-10" />
             <img 
               src={backgroundImage} 
               alt="Hintergrundbild" 
-              className="w-full h-full object-cover"
+              className="w-full h-full object-cover absolute inset-0 overflow-hidden bg-black/10"
             />
-          </div>
         )}
-        
-        {children}
+
+        <div className='relative z-10 flex items-center justify-center'>
+          {children}
+        </div>
       </main>
 
       <footer className="bg-white dark:bg-gray-800 py-3 sm:py-4 shadow-inner relative z-10">

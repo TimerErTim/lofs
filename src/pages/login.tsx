@@ -71,7 +71,6 @@ export default function LoginPage() {
     <>
       <Head>
         <title>Login | Lofs</title>
-        <meta name="viewport" content="width=device-width, initial-scale=1" />
       </Head>
 
       <div className="flex items-center justify-center min-h-screen bg-gray-100 dark:bg-gray-900 px-4 sm:px-6">
