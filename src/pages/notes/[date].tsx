@@ -108,11 +108,11 @@ export default function NotePage({ date }: NotePageProps) {
         }}
         backgroundImage={currentNote.imageUrl}
       >
-        <div className="m-6 lg:m-12 flex flex-col items-center justify-center w-full max-w-sm md:max-w-lg lg:max-w-2xl gap-6">
+        <div className="m-6 lg:m-12 flex flex-col items-center justify-between flex-grow w-full max-w-sm md:max-w-none gap-6 md:items-center md:flex-row">
           {/* Content */}
           <Card isBlurred fullWidth>
             <CardBody>
-              <h2 className="text-2xl font-bold mb-6 text-center text-gray-800 dark:text-gray-100">
+              <h2 className="text-2xl font-bold mb-4 lg:mb-6 text-center text-gray-800 dark:text-gray-100">
                 {formatDate(currentNote.date)}
               </h2>
 
@@ -120,7 +120,7 @@ export default function NotePage({ date }: NotePageProps) {
                 <p className="whitespace-pre-line text-lg text-gray-800 dark:text-gray-100">{currentNote.text}</p>
               </div>
 
-              <div className="text-right text-xs text-gray-600 dark:text-gray-400">
+              <div className="mt-1 text-right text-xs text-gray-600 dark:text-gray-400">
                 {notes.length > 1 && (
                   <span>
                     {currentIndex + 1} von {notes.length}
@@ -130,14 +130,14 @@ export default function NotePage({ date }: NotePageProps) {
             </CardBody>
           </Card>
 
-          <div className="w-full flex flex-row items-center justify-between">
+          <div className="w-full flex flex-row items-center justify-between md:contents">
             <Button
               onPress={handlePrevious}
               isDisabled={notes.length <= 1}
               aria-label="Vorherige Notiz"
               variant="faded"
               color="danger"
-              className="rounded-full"
+              className="rounded-full md:order-first"
             >
               <svg xmlns="http://www.w3.org/2000/svg" className="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 19l-7-7 7-7" />
@@ -149,7 +149,7 @@ export default function NotePage({ date }: NotePageProps) {
               aria-label="Nächste Notiz"
               variant="faded"
               color="danger"
-              className="rounded-full"
+              className="rounded-full md:order-last"
             >
               <svg xmlns="http://www.w3.org/2000/svg" className="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />

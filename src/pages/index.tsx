@@ -6,6 +6,7 @@ import CalendarView from '@/components/CalendarView';
 import Layout from '@/components/Layout';
 
 export default function Home() {
+  // TODO: Fix calendar max-min dates (one day off in max direction)
   const { notes, isLoaded } = useNotesStore();
 
   const handleLogout = () => {
