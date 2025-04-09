@@ -37,16 +37,16 @@ export default function Layout({
         </div>
       </header>
 
-      <main className="flex-1 relative">
+      <main className="flex-1 flex flex-col relative">
         {backgroundImage && (
             <img 
               src={backgroundImage} 
               alt="Hintergrundbild" 
-              className="w-full h-full object-cover absolute inset-0 overflow-hidden bg-black/10"
+              className="w-full h-full object-cover absolute inset-0 opacity-90 overflow-hidden bg-black/10"
             />
         )}
 
-        <div className='relative z-10 flex items-center justify-center'>
+        <div className='relative z-10 flex flex-1 justify-center'>
           {children}
         </div>
       </main>
