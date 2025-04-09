@@ -20,7 +20,7 @@ export default function Layout({
   backgroundImage
 }: LayoutProps) {
   return (
-    <div className="flex flex-col min-h-screen bg-gray-100 dark:bg-gray-900">
+    <div className="flex flex-col min-h-dvh bg-gray-100 dark:bg-gray-900">
       <header className="bg-white dark:bg-gray-800 shadow py-3 sm:py-4 z-10">
         <div className="container mx-auto px-3 sm:px-4 flex justify-between items-center">
           <h1 className="text-lg sm:text-xl font-bold text-gray-800 dark:text-gray-100 truncate">{title}</h1>
