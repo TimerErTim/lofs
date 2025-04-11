@@ -127,7 +127,7 @@ export default function NotePage({ date }: NotePageProps) {
       >
         <div className="m-6 lg:m-12 flex flex-col items-center justify-between flex-grow w-full max-w-sm md:max-w-none gap-6 md:items-center md:flex-row">
           {/* Content */}
-          <Card isBlurred fullWidth>
+          <Card isBlurred fullWidth className="backdrop-blur-sm bg-background/50 md:self-start">
             <CardBody>
               <h2 className="text-2xl font-bold mb-4 lg:mb-6 text-center text-gray-800 dark:text-gray-100">
                 {formatDate(currentNote.date)}
