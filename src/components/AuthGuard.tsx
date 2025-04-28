@@ -2,7 +2,7 @@ import { useEffect, useState, ReactNode } from 'react';
 import { useRouter } from 'next/router';
 import { isAuthenticated, getStoredPassword } from '@/utils/auth';
 import useNotesStore from '@/store/notesStore';
-import { loadEncryptedNotesFromWindow } from '@/utils/loadNotesClient';
+import { useEncryptedNotesClientSide } from '@/utils/loadNotesClient';
 
 interface AuthGuardProps {
   children: ReactNode;
@@ -20,11 +20,13 @@ export default function AuthGuard({ children }: AuthGuardProps) {
   const resetNotes = useNotesStore(state => state.resetNotes);
   const isLoaded = useNotesStore(state => state.isLoaded);
   
-  // Get encrypted data from embedded in window
-  const encryptedData = loadEncryptedNotesFromWindow();
+  const encryptedData = useEncryptedNotesClientSide();
 
   // Try to load notes using the stored password
   useEffect(() => {
+    if (!encryptedData) {
+      return;
+    }
 
     const checkAuth = async () => {
        // Skip for public paths

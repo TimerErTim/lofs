@@ -5,7 +5,7 @@ import { Input } from '@heroui/react';
 import { Button } from '@heroui/react';
 import { isAuthenticated, storePassword } from '@/utils/auth';
 import useNotesStore from '@/store/notesStore';
-import { loadEncryptedNotesFromWindow } from '@/utils/loadNotesClient';
+import { useEncryptedNotesClientSide } from '@/utils/loadNotesClient';
 
 export default function LoginPage() {
   const router = useRouter();
@@ -16,7 +16,7 @@ export default function LoginPage() {
   const [isCheckInProgress, setIsCheckInProgress] = useState(false);
 
   // Use the memoized hook to load encrypted data
-  const encryptedData = loadEncryptedNotesFromWindow();
+  const encryptedData = useEncryptedNotesClientSide();
 
   // Access notes store
   const storeEncryptedNotes = useNotesStore(state => state.storeEncryptedNotes);
