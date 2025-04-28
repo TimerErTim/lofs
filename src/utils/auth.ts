@@ -1,4 +1,4 @@
-import { loadEncryptedNotesFromWindow } from './loadNotesClient';
+import { fetchEncryptedNotes } from './loadNotesClient';
 import { decryptNotes } from './decryptNotes';
 
 // Key for sessionStorage
@@ -37,7 +37,7 @@ export async function isAuthenticated(): Promise<boolean> {
     return false;
   }
   // Check if the password is correct
-  const encyrptedData = loadEncryptedNotesFromWindow();
+  const encyrptedData = await fetchEncryptedNotes();
   if (encyrptedData === null) {
     return false;
   }
