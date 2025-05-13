@@ -3,6 +3,7 @@ import { useRouter } from 'next/router';
 import { isAuthenticated, getStoredPassword } from '@/utils/auth';
 import useNotesStore from '@/store/notesStore';
 import { useEncryptedNotesClientSide } from '@/utils/loadNotesClient';
+import { Spinner } from "@heroui/react";
 
 interface AuthGuardProps {
   children: ReactNode;
@@ -71,6 +72,15 @@ export default function AuthGuard({ children }: AuthGuardProps) {
       }
     });
   }, [encryptedData, isLoaded, storeEncryptedNotes, resetNotes, router]);
+
+  // Show loading spinner while encryptedData is being fetched
+  if (encryptedData == null) {
+    return (
+      <div className="fixed left-0 right-0 bottom-0 top-0 flex justify-center items-center">
+        <Spinner size='lg' variant='gradient' label='Loading data...' />
+      </div>
+    );
+  }
 
   // Show nothing while unauthorized
   if (!authorized) {
