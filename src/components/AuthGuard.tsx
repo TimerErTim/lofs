@@ -3,7 +3,7 @@ import { useRouter } from 'next/router';
 import { isAuthenticated, getStoredPassword } from '@/utils/auth';
 import useNotesStore from '@/store/notesStore';
 import { useEncryptedNotesClientSide } from '@/utils/loadNotesClient';
-import { Spinner } from "@heroui/react";
+import { CircularProgress } from "@heroui/react";
 
 interface AuthGuardProps {
   children: ReactNode;
@@ -21,11 +21,11 @@ export default function AuthGuard({ children }: AuthGuardProps) {
   const resetNotes = useNotesStore(state => state.resetNotes);
   const isLoaded = useNotesStore(state => state.isLoaded);
   
-  const encryptedData = useEncryptedNotesClientSide();
+  const { encryptedNotes, progress } = useEncryptedNotesClientSide();
 
   // Try to load notes using the stored password
   useEffect(() => {
-    if (!encryptedData) {
+    if (!encryptedNotes) {
       return;
     }
 
@@ -37,12 +37,12 @@ export default function AuthGuard({ children }: AuthGuardProps) {
       }
 
       // Only load if not already loaded
-      if (!isLoaded && encryptedData) {
+      if (!isLoaded && encryptedNotes) {
         const password = getStoredPassword();
         
         if (password) {
           try {
-            const success = await storeEncryptedNotes(encryptedData, password);
+            const success = await storeEncryptedNotes(encryptedNotes, password);
             
             if (!success) {
               // Decryption failed with stored password - invalid auth
@@ -71,13 +71,15 @@ export default function AuthGuard({ children }: AuthGuardProps) {
         setAuthorized(true);
       }
     });
-  }, [encryptedData, isLoaded, storeEncryptedNotes, resetNotes, router]);
+  }, [encryptedNotes, isLoaded, storeEncryptedNotes, resetNotes, router]);
 
   // Show loading spinner while encryptedData is being fetched
-  if (encryptedData == null) {
+  if (encryptedNotes == null) {
     return (
       <div className="fixed left-0 right-0 bottom-0 top-0 flex justify-center items-center">
-        <Spinner size='lg' variant='gradient' label='Loading data...' />
+        <div className="flex flex-col items-center">
+          <CircularProgress size='lg' label="Lade Daten..." color='primary' className="text-gray-900" value={progress ?? undefined} showValueLabel/>
+        </div>
       </div>
     );
   }

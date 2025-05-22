@@ -16,7 +16,7 @@ export default function LoginPage() {
   const [isCheckInProgress, setIsCheckInProgress] = useState(false);
 
   // Use the memoized hook to load encrypted data
-  const encryptedData = useEncryptedNotesClientSide();
+  const {encryptedNotes: encryptedNotes, progress: _progress} = useEncryptedNotesClientSide();
 
   // Access notes store
   const storeEncryptedNotes = useNotesStore(state => state.storeEncryptedNotes);
@@ -34,7 +34,7 @@ export default function LoginPage() {
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
 
-    if (!encryptedData) {
+    if (!encryptedNotes) {
       setError('Encrypted data not yet loaded. Please wait.');
       return;
     }
@@ -44,7 +44,7 @@ export default function LoginPage() {
 
     try {
       // Try to decrypt the notes with the provided password and store in global state
-      const success = await storeEncryptedNotes(encryptedData, password);
+      const success = await storeEncryptedNotes(encryptedNotes, password);
 
       if (success) {
         // Decryption successful, store password
