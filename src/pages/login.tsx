@@ -41,6 +41,10 @@ export default function LoginPage() {
 
     setIsCheckInProgress(true);
     setError('');
+    // To yield async execution and allow a React rerender before the long-running process,
+    // we can use `await new Promise(resolve => setTimeout(resolve, 10));`
+    // This yields to the event loop, allowing state updates (like setIsCheckInProgress) to flush.
+    await new Promise(resolve => setTimeout(resolve, 10));
 
     try {
       // Try to decrypt the notes with the provided password and store in global state
