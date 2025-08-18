@@ -15,9 +15,26 @@ export default function CalendarView({ notes }: CalendarViewProps) {
 
   // Create a map of dates that have notes
   const noteDatesMap = new Map<string, Note>();
+  const imageDateLabelsEn: string[] = [];
+  const imageDateLabelsDe: string[] = [];
+
   notes.forEach(note => {
     const formattedDate = format(new Date(note.date), 'yyyy-MM-dd', { locale: de });
     noteDatesMap.set(formattedDate, note);
+
+    // Collect ARIA labels for dates that have an image to style specific cells
+    if (note.imageUrl) {
+      const d = new Date(`${note.date}T00:00:00`);
+      // React Aria uses the i18n locale for aria-labels; include common locales to be robust
+      const labelEn = d.toLocaleDateString('en-US', {
+        weekday: 'long', year: 'numeric', month: 'long', day: 'numeric'
+      });
+      const labelDe = d.toLocaleDateString('de-DE', {
+        weekday: 'long', year: 'numeric', month: 'long', day: 'numeric'
+      });
+      imageDateLabelsEn.push(labelEn);
+      imageDateLabelsDe.push(labelDe);
+    }
   });
 
   const handleDateChange = (selectedDate: DateValue) => {
@@ -70,19 +87,35 @@ export default function CalendarView({ notes }: CalendarViewProps) {
               "[&:not([data-unavailable])]:after:-translate-x-1/2", 
               "[&:not([data-unavailable])]:after:w-1.5",
               "[&:not([data-unavailable])]:after:h-1.5",
-              "[&:not([data-unavailable])]:after:bg-danger-300",
+              "[&:not([data-unavailable])]:after:bg-danger-200",
               "[&:not([data-unavailable])]:after:rounded-full"
             )
           }}
             minValue={minDate}
             maxValue={maxDate}
           />
+          {/* Scoped styles to swap indicator for dates with images */}
+          {([...imageDateLabelsEn, ...imageDateLabelsDe].length > 0) && (
+            <style>{`:is(
+              ${[...new Set([...imageDateLabelsEn, ...imageDateLabelsDe])]
+                .map((label) => `td[data-slot="cell"] > span[aria-label="${label.replace(/"/g, '\\"')}"]`)
+                .join(',')}
+              )::after {
+                background-color: hsl(var(--heroui-danger-500));
+              }
+            `}</style>
+          )}
         </CardBody>
 
         <CardFooter className="justify-center items-center">
-          <Chip size="sm" variant="faded" startContent={<span className="w-2 h-2 mx-1 rounded-full bg-danger-300"></span>}>
-            Tage mit Notizen
-          </Chip>
+          <div className="flex gap-2 flex-wrap justify-center">
+            <Chip size="sm" variant="faded" startContent={<span className="w-2 h-2 mx-1 rounded-full bg-danger-200"></span>}>
+              Notiz (ohne Bild)
+            </Chip>
+            <Chip size="sm" variant="faded" startContent={<span className="w-2 h-2 mx-1 rounded-full bg-danger-500"></span>}>
+              Notiz mit Bild
+            </Chip>
+          </div>
         </CardFooter>
       </Card>
     </div>
