@@ -30,7 +30,10 @@ export async function fetchEncryptedNotes(onProgress: (progress: number) => void
     
             // Try to get the content length
             const contentEncoding = response.headers.get('content-encoding');
-            const contentLengthHeader = contentEncoding ? response.headers.get('x-file-size') : response.headers.get('content-length');
+            const contentLengthHeader = contentEncoding ? (
+                // Fallback to content-length if x-file-size is not present (better inaccurate than nothing)
+                response.headers.get('x-file-size') ?? response.headers.get('content-length')
+            ) : response.headers.get('content-length');
             const total = contentLengthHeader ? parseInt(contentLengthHeader, 10) : null;
             if (!response.body || total == null) {
                 // No stream support
