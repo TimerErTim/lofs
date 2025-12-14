@@ -7,7 +7,6 @@
     "build": "next build",
     "start": "next start",
     "prod": "npm run build && npx serve out/",
-    "build:notes": "node scripts/encrypt.js",
     "lint": "next lint",
     "test:ts": "tsc --noEmit"
   },
