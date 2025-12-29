@@ -10,7 +10,7 @@ interface LayoutProps {
     variant?: 'solid' | 'bordered' | 'light' | 'flat' | 'faded' | 'shadow' | 'ghost';
     className?: string;
   };
-  backgroundImage?: string;
+  backgroundImage?: string | null;
 }
 
 export default function Layout({
@@ -50,6 +50,11 @@ export default function Layout({
               className="w-full h-full object-contain absolute inset-0 overflow-hidden"
             />
         </>}
+        {backgroundImage === null && (
+          <div className="w-full h-full absolute inset-0 flex items-center justify-center bg-gray-200 dark:bg-gray-700">
+            <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-gray-600 dark:border-gray-300"></div>
+          </div>
+        )}
 
         <div className='relative z-10 flex flex-1 justify-center'>
           {children}

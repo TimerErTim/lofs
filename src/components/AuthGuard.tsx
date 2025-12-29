@@ -18,7 +18,6 @@ export default function AuthGuard({ children }: AuthGuardProps) {
   
   // Get store functions and state
   const storeEncryptedNotes = useNotesStore(state => state.storeEncryptedNotes);
-  const resetNotes = useNotesStore(state => state.resetNotes);
   const isLoaded = useNotesStore(state => state.isLoaded);
   
   const { encryptedNotes, progress } = useEncryptedNotesClientSide();
@@ -71,7 +70,7 @@ export default function AuthGuard({ children }: AuthGuardProps) {
         setAuthorized(true);
       }
     });
-  }, [encryptedNotes, isLoaded, storeEncryptedNotes, resetNotes, router]);
+  }, [encryptedNotes, isLoaded, storeEncryptedNotes, router]);
 
   // Show loading spinner while encryptedData is being fetched
   if (encryptedNotes == null) {

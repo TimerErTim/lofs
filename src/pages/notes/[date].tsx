@@ -2,13 +2,15 @@ import { useState, useEffect } from 'react';
 import { useRouter } from 'next/router';
 import Head from 'next/head';
 import { GetStaticProps, GetStaticPaths } from 'next';
-import { Button, ButtonGroup, CardBody, Card, CardFooter } from '@heroui/react';
+import { Button, CardBody, Card, CardFooter } from '@heroui/react';
 import { format } from 'date-fns';
 import { de } from 'date-fns/locale';
 import { decryptNotesAtBuildTime } from '@/utils/serverDecrypt';
 import useNotesStore from '@/store/notesStore';
 import { Note } from '@/types/notes';
 import Layout from '@/components/Layout';
+import { getStoredPassword } from '@/utils/auth';
+import { decryptImageAsset, fetchEncryptedImageAsset } from '@/utils/decryptNotes';
 
 interface NotePageProps {
   date: string;
@@ -21,6 +23,7 @@ export default function NotePage({ date }: NotePageProps) {
   const [loading, setLoading] = useState(true);
   const [currentNote, setCurrentNote] = useState<Note | null>(null);
   const [currentIndex, setCurrentIndex] = useState(-1);
+  const [backgroundImage, setBackgroundImage] = useState<string | undefined | null>(null);
 
   useEffect(() => {
     // Notes are already loaded by AuthGuard in global state
@@ -46,6 +49,65 @@ export default function NotePage({ date }: NotePageProps) {
       setLoading(false);
     }
   }, [date, isLoaded, notes, router]);
+
+  useEffect(() => {
+    setBackgroundImage(null);
+
+    if (!currentNote?.imageUrl || typeof window === 'undefined') {
+      setBackgroundImage(undefined);
+      return;
+    }
+
+    const password = getStoredPassword();
+    if (!password) {
+      setBackgroundImage(undefined);
+      return;
+    }
+
+    let isCanceled = false;
+
+    const guessMimeType = (pathname: string) => {
+      const extension = pathname.split('.').pop()?.toLowerCase();
+      switch (extension) {
+        case 'png':
+          return 'image/png';
+        case 'gif':
+          return 'image/gif';
+        case 'svg':
+          return 'image/svg+xml';
+        case 'webp':
+          return 'image/webp';
+        case 'avif':
+          return 'image/avif';
+        case 'bmp':
+          return 'image/bmp';
+        case 'jpg':
+        case 'jpeg':
+        default:
+          return 'image/jpeg';
+      }
+    };
+
+    fetchEncryptedImageAsset(currentNote.imageUrl)
+      .then(encrypted => {
+        if (!encrypted) return null;
+        return decryptImageAsset(encrypted, password);
+      })
+      .then(base64 => {
+        if (isCanceled) return;
+        setBackgroundImage(base64 && currentNote.imageUrl ? `data:${guessMimeType(currentNote.imageUrl)};base64,${base64}` : undefined);
+      })
+      .catch(error => {
+        console.error('Failed to load note image:', error);
+        if (!isCanceled) {
+          setBackgroundImage(undefined);
+        }
+      });
+
+    return () => {
+      isCanceled = true;
+    };
+  }, [currentNote?.imageUrl]);
 
   const handleNext = () => {
     if (notes.length <= 1) return;
@@ -117,14 +179,14 @@ export default function NotePage({ date }: NotePageProps) {
         <title>{formatDate(currentNote.date)} | Lofs</title>
       </Head>
 
-      <Layout
-        headerButton={{
-          label: 'Zum Kalender',
-          onClick: handleBackToCalendar,
-          variant: 'ghost'
-        }}
-        backgroundImage={currentNote.imageUrl}
-      >
+        <Layout
+          headerButton={{
+            label: 'Zum Kalender',
+            onClick: handleBackToCalendar,
+            variant: 'ghost'
+          }}
+          backgroundImage={backgroundImage}
+        >
         <div className="m-6 lg:m-12 flex flex-col items-center justify-between flex-grow w-full max-w-sm md:max-w-none gap-6 md:items-center md:flex-row">
           {/* Content */}
           <Card isBlurred fullWidth className="backdrop-blur-sm bg-background/50 md:self-start">

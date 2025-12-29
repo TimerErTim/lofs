@@ -27,7 +27,7 @@ export async function fetchEncryptedNotes(onProgress: (progress: number) => void
                 onProgress(100);
                 return null;
             }
-    
+
             // Try to get the content length
             const contentEncoding = response.headers.get('content-encoding');
             const contentLengthHeader = contentEncoding ? (
@@ -40,7 +40,7 @@ export async function fetchEncryptedNotes(onProgress: (progress: number) => void
                 const encryptedData = await response.text();
                 return encryptedData;
             }
-    
+
             const reader = response.body.getReader();
             let received = 0;
             const chunks: Uint8Array[] = [];
@@ -53,7 +53,7 @@ export async function fetchEncryptedNotes(onProgress: (progress: number) => void
                     onProgress(Math.min(100, Math.round((received / total) * 100)));
                 }
             }
-    
+
             onProgress(100);
             // Concatenate all chunks
             const body = new Uint8Array(received);

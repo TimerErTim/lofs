@@ -16,7 +16,7 @@ export default function LoginPage() {
   const [isCheckInProgress, setIsCheckInProgress] = useState(false);
 
   // Use the memoized hook to load encrypted data
-  const {encryptedNotes: encryptedNotes, progress: _progress} = useEncryptedNotesClientSide();
+  const { encryptedNotes, progress: _progress } = useEncryptedNotesClientSide();
 
   // Access notes store
   const storeEncryptedNotes = useNotesStore(state => state.storeEncryptedNotes);

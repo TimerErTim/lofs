@@ -16,14 +16,16 @@ A private website for sharing daily love notes with your significant other. Buil
 ## Project Structure
 
 ```
-├── data/               # Contains encrypted notes data
+├── data/               # Generated encrypted payloads (notes + encrypted images)
 ├── public/             # Static assets
 │   ├── favicon-16x16.png  # Favicons and app icons
 │   ├── favicon-32x32.png
 │   ├── apple-touch-icon.png
-│   └── site.webmanifest   # Web app manifest
+│   ├── encrypted_notes.dat  # Symlink -> ../data/encrypted_notes.dat
+│   ├── notes-images/       # Symlink -> ../data/notes-images
+│   └── site.webmanifest     # Web app manifest
 ├── scripts/            # Utility scripts
-│   └── encrypt.js      # Script to encrypt notes
+│   └── encrypt.bash    # Script to encrypt notes
 ├── src/
 │   ├── components/     # React components
 │   │   └── AuthGuard.tsx # Authentication component
@@ -92,13 +94,12 @@ The application uses a custom Next.js Document component:
 
 ## Encrypting Notes
 
-1. Create a folder with your notes and images
-2. Ensure the folder contains a `notes.json` file with the format:
+1. Create a folder with your notes and optional `images/` subfolder.
+2. Make sure the folder contains a `notes.json` file with this structure:
    ```json
    {
      "notes": [
        {
-         "id": "1",
          "date": "2023-04-01",
          "text": "Your love note text here",
          "imageUrl": "optional-image.jpg"
@@ -106,7 +107,8 @@ The application uses a custom Next.js Document component:
      ]
    }
    ```
-3. Run the encryption script:
+   The `imageUrl` value should point to a file inside the local `images/` folder; it is only required when a note has an image.
+3. Run the encryption script. It encrypts `notes.json` and each referenced image into `data/` while refreshing the public symlinks so the static assets stay in sync:
    ```
    npm run build:notes -- ./path-to-notes-folder your-password
    ```

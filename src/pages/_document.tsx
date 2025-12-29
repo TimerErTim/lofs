@@ -1,6 +1,4 @@
-import { NextPageContext } from "next";
 import Document, { Html, Head, Main, NextScript, DocumentContext } from "next/document";
-import { loadEncryptedNotesFromFS } from "@/utils/loadNotesServer";
 
 Page.getInitialProps = async (ctx: DocumentContext) => {
   const initialProps = await Document.getInitialProps(ctx);

@@ -1,5 +1,4 @@
 import { decryptNotes } from './decryptNotes';
-import { Note } from '@/types/notes';
 import fs from 'fs';
 import path from 'path';
 
@@ -19,7 +18,6 @@ export async function decryptNotesAtBuildTime(): Promise<string[]> {
       return [];
     }
     
-    // Read encrypted file
     const encryptedFilePath = path.join(process.cwd(), 'data', 'encrypted_notes.dat');
     
     if (!fs.existsSync(encryptedFilePath)) {
@@ -28,7 +26,7 @@ export async function decryptNotesAtBuildTime(): Promise<string[]> {
     }
     
     const encryptedData = fs.readFileSync(encryptedFilePath, 'utf8');
-    console.log(`Read encrypted data (length: ${encryptedData.length}) from ${encryptedFilePath}`);
+    console.log(`Read encrypted notes (length: ${encryptedData.length}) from ${encryptedFilePath}`);
     
     // Use the existing decryptNotes function
     try {
